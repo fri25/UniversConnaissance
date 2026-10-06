@@ -85,6 +85,8 @@ Renseignez `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_
 
 ## 4. Déploiement (production)
 
+> Hébergement gratuit pas à pas : voir **[DEPLOY-ALWAYSDATA.md](DEPLOY-ALWAYSDATA.md)**. Mise à jour sur le serveur : `bash deploy.sh`.
+
 ```bash
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
@@ -98,7 +100,7 @@ Check-list :
 - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://votre-domaine` (utilisé pour signer les liens de téléchargement), HTTPS obligatoire, `SESSION_SECURE_COOKIE=true`.
 - MySQL : `DB_CONNECTION=mysql` + identifiants.
 - `PAYMENT_GATEWAY=chariow` + clés Chariow, chaque e-book actif lié à son produit Chariow (le prestataire simulé est refusé en production).
-- Worker de queue permanent (Supervisor) + `php artisan schedule:run` en cron si vous ajoutez des tâches planifiées.
+- Emails de livraison : soit un worker permanent (`php artisan queue:work` sous Supervisor), soit, sur un mutualisé, une tâche cron `php artisan schedule:run` chaque minute (elle vide la file d'attente).
 - Le document root doit être `public/`. Les fichiers complets et extraits sont dans `storage/app/private` : **jamais** servis par URL publique, uniquement via la route protégée.
 - Ne pas lancer `db:seed` en production (comptes de démo avec mot de passe `password`).
 
