@@ -37,6 +37,14 @@ Puis, depuis votre ordinateur (PowerShell ou Git Bash) :
 ssh moncompte@ssh-moncompte.alwaysdata.net
 ```
 
+Tapez votre mot de passe (rien ne s'affiche pendant la saisie, c'est normal). Vous êtes connecté quand l'invite ressemble à :
+
+```
+moncompte@ssh1:~$
+```
+
+> ⚠️ **Toutes les commandes des étapes 5, 6 et 11 se tapent dans cette fenêtre SSH**, jamais dans un PowerShell ouvert sur votre ordinateur. Si l'invite commence par `PS C:\…`, vous êtes encore sur votre PC : `nano` y est inconnu, et `cp .env.example .env` y écraserait votre `.env` local.
+
 ## 5. Installer le projet sur le serveur
 
 ```bash
@@ -56,7 +64,9 @@ nano .env                           # voir l'étape 6
 
 ## 6. Configurer le fichier `.env`
 
-Modifiez au minimum ces lignes (`Ctrl+O` pour enregistrer, `Ctrl+X` pour quitter nano) :
+Modifiez au minimum ces lignes avec `nano .env` : déplacez-vous avec les flèches, puis `Ctrl+O` et `Entrée` pour enregistrer, `Ctrl+X` pour quitter.
+
+> Vous préférez un éditeur graphique ? Connectez-vous en **SFTP** avec FileZilla ou WinSCP (hôte `ssh-moncompte.alwaysdata.net`, port 22, mêmes identifiants que SSH), ouvrez `univers-connaissance/.env`, modifiez-le puis enregistrez. Activez l'affichage des fichiers cachés, car `.env` commence par un point.
 
 ```dotenv
 APP_NAME="Univers Connaissance"
@@ -165,5 +175,6 @@ cd ~/univers-connaissance && bash deploy.sh
 | Pas de style (CSS) | `public/build` absent : faites `npm run build` en local, puis commit et push |
 | Couvertures invisibles | `php artisan storage:link` |
 | Emails non reçus | Vérifiez la tâche planifiée (étape 8), puis `php artisan queue:work --stop-when-empty` pour tester |
+| `nano` non reconnu / erreur PowerShell | Vous êtes sur votre PC : connectez-vous d’abord en SSH (étape 4) |
 | Modification du `.env` sans effet | `bash deploy.sh` (la configuration est mise en cache) |
 | Disque plein | `composer clear-cache` ; supprimez les vieux logs dans `storage/logs` |
