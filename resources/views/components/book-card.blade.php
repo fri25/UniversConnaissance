@@ -37,7 +37,7 @@
             @if ($owned)
                 <a href="{{ route('dashboard') }}" class="btn-solid !px-3 !py-2 text-xs">Télécharger</a>
             @elseif ($book->isPurchasable())
-                <a href="{{ route('books.buy', $book) }}" class="btn-primary !px-3 !py-2 text-xs">Acheter</a>
+                <a href="{{ route('books.buy', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary !px-3 !py-2 text-xs">Acheter</a>
             @else
                 <span class="btn-ghost !px-3 !py-2 text-xs opacity-70" aria-disabled="true">Bientôt</span>
             @endif

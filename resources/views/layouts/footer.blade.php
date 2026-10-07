@@ -55,6 +55,9 @@
                 <a class="hover:text-brand-700 dark:hover:text-brand-300" href="{{ route('pages.legal') }}">Mentions légales</a>
                 <a class="hover:text-brand-700 dark:hover:text-brand-300" href="{{ route('pages.terms') }}">CGV</a>
                 <a class="hover:text-brand-700 dark:hover:text-brand-300" href="{{ route('pages.privacy') }}">Confidentialité</a>
+                @if (app(\App\Services\MetaPixel::class)->enabled())
+                    <button type="button" class="hover:text-brand-700 dark:hover:text-brand-300" onclick="try{localStorage.removeItem('uc-consent')}catch(e){};location.reload()">Gérer les cookies</button>
+                @endif
             </nav>
         </div>
     </div>

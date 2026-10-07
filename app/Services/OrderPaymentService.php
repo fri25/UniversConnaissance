@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendMetaPurchase;
 use App\Mail\EbookDelivered;
 use App\Models\Order;
 use App\Models\User;
@@ -17,7 +18,10 @@ use Illuminate\Support\Str;
 
 class OrderPaymentService
 {
-    public function __construct(private readonly DownloadService $downloads) {}
+    public function __construct(
+        private readonly DownloadService $downloads,
+        private readonly MetaPixel $meta,
+    ) {}
 
     /**
      * Applique un événement de paiement. Idempotent : rejouer le même
@@ -97,6 +101,7 @@ class OrderPaymentService
         }
 
         $this->sendDeliveryEmail($order);
+        $this->trackPurchase($order);
 
         return $order;
     }
@@ -136,6 +141,7 @@ class OrderPaymentService
 
         if ($changed) {
             $this->sendDeliveryEmail($order);
+            $this->trackPurchase($order);
         }
 
         return $changed;
@@ -169,6 +175,16 @@ class OrderPaymentService
         $order->loadMissing('user', 'book', 'download');
 
         Mail::to($order->user)->queue(new EbookDelivered($order));
+    }
+
+    /**
+     * Statistiques publicitaires (pixel Meta, API Conversions) si configurées.
+     */
+    private function trackPurchase(Order $order): void
+    {
+        if ($this->meta->serverSideEnabled()) {
+            SendMetaPurchase::dispatch($order);
+        }
     }
 
     /**

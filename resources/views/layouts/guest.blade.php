@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('layouts.partials.head', ['title' => $title ?? null])
+    @include('layouts.partials.meta-pixel')
 </head>
 <body class="font-sans">
     <div class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-10">
@@ -19,5 +20,6 @@
 
         <a href="{{ route('books.index') }}" class="link mt-6 text-sm">← Retour à la boutique</a>
     </div>
+    <x-cookie-consent />
 </body>
 </html>

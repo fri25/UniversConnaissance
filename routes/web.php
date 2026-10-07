@@ -80,6 +80,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('users', [Admin\UserController::class, 'index'])->name('users.index');
     Route::patch('users/{user}/admin', [Admin\UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
 
+    Route::get('settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
+    Route::put('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+
     Route::get('reviews', [Admin\ReviewController::class, 'index'])->name('reviews.index');
     Route::patch('reviews/{review}/approval', [Admin\ReviewController::class, 'toggle'])->name('reviews.toggle');
     Route::delete('reviews/{review}', [Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');

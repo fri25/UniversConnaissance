@@ -4,6 +4,12 @@
     $action = $currentCategory ? route('categories.show', $currentCategory) : route('books.index');
 @endphp
 <x-app-layout :title="$pageTitle" :description="$currentCategory?->description">
+    @if (! empty($filters['q']))
+        @push('pixel-events')
+            ucTrack('Search', { search_string: @json($filters['q']) });
+        @endpush
+    @endif
+
     <x-slot name="header">
         <nav class="text-sm text-slate-500 dark:text-slate-400" aria-label="Fil d'Ariane">
             <a href="{{ route('home') }}" class="hover:text-brand-700">Accueil</a>

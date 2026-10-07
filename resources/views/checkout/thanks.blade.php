@@ -1,4 +1,13 @@
 <x-app-layout title="Merci pour votre achat">
+    @if ($order)
+        @php
+            $pixelPurchase = ['value' => $order->amount, 'currency' => 'XOF', 'content_ids' => [(string) $order->book_id], 'content_type' => 'product'];
+            $pixelEventId = \App\Services\MetaPixel::purchaseEventId($order);
+        @endphp
+        @push('pixel-events')
+            ucTrack('Purchase', @json($pixelPurchase), { eventID: @json($pixelEventId) });
+        @endpush
+    @endif
     <div class="container-page max-w-xl py-14 text-center">
         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
             <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>

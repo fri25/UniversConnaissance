@@ -3,6 +3,7 @@
 <head>
     @include('layouts.partials.head', ['title' => $title, 'description' => $description])
     @stack('head')
+    @include('layouts.partials.meta-pixel')
 </head>
 <body class="flex min-h-screen flex-col font-sans">
     <a href="#contenu" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-ink">
@@ -26,6 +27,8 @@
     </main>
 
     @include('layouts.footer')
+
+    <x-cookie-consent />
 
     @stack('scripts')
 </body>

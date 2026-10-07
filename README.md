@@ -79,6 +79,12 @@ Fonctionnement :
 
 ---
 
+## 2 bis. Pixel Meta
+
+**Admin → Réglages** : identifiant du pixel et, recommandé, jeton de l'API Conversions (stocké chiffré). Événements : `PageView`, `ViewContent` (fiche e-book), `Search`, `InitiateCheckout` (clic « Acheter »), `Purchase` (page Merci + **envoi serveur** à la confirmation Chariow, même `event_id` pour la déduplication). Le pixel navigateur n'est chargé qu'après acceptation du bandeau cookies ; jamais dans l'admin. Valeurs par défaut possibles via `META_PIXEL_ID` / `META_CAPI_TOKEN` dans `.env`.
+
+---
+
 ## 3. Emails (SMTP)
 
 Renseignez `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`. L'email de livraison (`App\Mail\EbookDelivered`) est mis en file : **un worker doit tourner** (`php artisan queue:work`, sous Supervisor/systemd en production). L'admin peut le renvoyer depuis la fiche commande.

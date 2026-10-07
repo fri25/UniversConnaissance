@@ -31,6 +31,10 @@
     $canReview = auth()->check() && ! $userReview && auth()->user()->can('create', [\App\Models\Review::class, $book]);
 @endphp
 <x-app-layout :title="$book->title.' — '.$book->authorNames()" :description="\Illuminate\Support\Str::limit(strip_tags((string) $book->summary), 155)">
+    @push('pixel-events')
+        ucTrack('ViewContent', @json(\App\Services\MetaPixel::bookData($book)));
+    @endpush
+
     @push('head')
         <meta property="og:type" content="book">
         <meta property="og:image" content="{{ $book->coverUrl() }}">
@@ -108,7 +112,7 @@
                                 </a>
                             @endforeach
                         @elseif ($book->isPurchasable())
-                            <a href="{{ route('books.buy', $book) }}" class="btn-primary flex-1 py-3 text-base">Acheter maintenant</a>
+                            <a href="{{ route('books.buy', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary flex-1 py-3 text-base">Acheter maintenant</a>
                         @else
                             <span class="btn-outline flex-1 cursor-not-allowed py-3 text-base opacity-70" aria-disabled="true">Bientôt disponible</span>
                         @endif
@@ -300,7 +304,7 @@
             @if ($purchase)
                 <a href="{{ route('dashboard') }}" class="btn-solid">Télécharger</a>
             @elseif ($book->isPurchasable())
-                <a href="{{ route('books.buy', $book) }}" class="btn-primary">Acheter maintenant</a>
+                <a href="{{ route('books.buy', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary">Acheter maintenant</a>
             @else
                 <span class="btn-outline opacity-70" aria-disabled="true">Bientôt disponible</span>
             @endif

@@ -185,6 +185,19 @@ php artisan demo:purge --force              # 3. suppression réelle
 - Après la purge, ne relancez **jamais** `php artisan db:seed` sur ce serveur.
 
 ---
+## 13. Pixel Meta (Facebook / Instagram)
+
+Tout se règle dans l'admin, sans toucher au serveur : **Admin → Réglages**.
+
+1. **Identifiant du pixel** : Gestionnaire d'événements Meta → votre pixel (jeu de données) → Paramètres → copiez l'ID (chiffres uniquement).
+2. **Jeton de l'API Conversions** (fortement recommandé) : même page → section *API Conversions* → « Générer un jeton d'accès ». Le paiement se fait sur la page Chariow : sans ce jeton, une grande partie des achats ne remonte pas à Meta.
+3. Pour vérifier : onglet **Tester les événements** de Meta → copiez le code de test dans le champ prévu, ouvrez le site, **acceptez le bandeau cookies**, consultez un livre puis faites un achat (simulé ou réel). Les événements `PageView`, `ViewContent`, `InitiateCheckout` et `Purchase` doivent apparaître. **Videz ensuite le code de test.**
+
+> Les achats envoyés par le serveur partent via la file d'attente : la tâche planifiée de l'étape 8 doit être active.
+> Si vous activez aussi un pixel dans les réglages Chariow, l'achat risque d'être compté deux fois : utilisez l'un ou l'autre pour l'événement Purchase.
+
+---
+
 ## En cas de problème
 
 | Symptôme | Piste |
@@ -196,4 +209,6 @@ php artisan demo:purge --force              # 3. suppression réelle
 | Emails non reçus | Vérifiez la tâche planifiée (étape 8), puis `php artisan queue:work --stop-when-empty` pour tester |
 | `nano` non reconnu / erreur PowerShell | Vous êtes sur votre PC : connectez-vous d’abord en SSH (étape 4) |
 | Modification du `.env` sans effet | `bash deploy.sh` (la configuration est mise en cache) |
+| Pixel Meta : aucun événement | Le bandeau cookies a-t-il été accepté ? Le pixel ne se charge qu'après accord. Vérifiez l'ID dans Admin → Réglages |
+| Pixel Meta : pas d'achats | Jeton API Conversions manquant ou invalide (voir `storage/logs/laravel.log`, lignes « Meta CAPI ») ; tâche planifiée inactive |
 | Disque plein | `composer clear-cache` ; supprimez les vieux logs dans `storage/logs` |

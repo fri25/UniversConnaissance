@@ -25,7 +25,12 @@
         <p>Vous pouvez accéder à vos données, les rectifier ou supprimer votre compte depuis votre profil, ou en écrivant à {{ config('store.support.email') }}.</p>
     </section>
     <section>
-        <h2>Cookies</h2>
-        <p>Le site utilise uniquement des cookies techniques (session, sécurité CSRF) et le stockage local de votre navigateur pour mémoriser le thème clair/sombre.</p>
+        <h2>Cookies et mesure publicitaire</h2>
+        <p>Le site utilise des cookies techniques indispensables (session, sécurité CSRF) et le stockage local de votre navigateur pour mémoriser le thème clair/sombre et votre choix concernant les cookies.</p>
+        @if (app(\App\Services\MetaPixel::class)->enabled())
+            <p>Avec votre accord (bandeau affiché lors de votre première visite), nous utilisons le <strong>pixel Meta</strong> (Facebook / Instagram) pour mesurer l'efficacité de nos publicités : pages consultées, clics sur « Acheter » et achats. Sans votre accord, il n'est pas chargé.</p>
+            <p>Lorsqu'un achat est confirmé, nous pouvons transmettre à Meta, via son API Conversions, le montant, l'e-book acheté et vos coordonnées <strong>sous forme chiffrée (hachage SHA-256)</strong> : email, téléphone, prénom. Meta s'en sert uniquement pour rattacher l'achat à une publicité.</p>
+            <p><button type="button" class="link" onclick="try{localStorage.removeItem('uc-consent')}catch(e){};location.reload()">Modifier mon choix sur les cookies</button></p>
+        @endif
     </section>
 </x-static-page>
