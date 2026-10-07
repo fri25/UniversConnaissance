@@ -23,6 +23,13 @@ class RegisterRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'Un compte existe déjà avec cet email (il a peut-être été créé lors d\'un achat). Utilisez « Mot de passe oublié » pour choisir votre mot de passe.',
+        ];
+    }
+
     public function attributes(): array
     {
         return ['name' => 'nom', 'phone' => 'téléphone', 'password' => 'mot de passe'];

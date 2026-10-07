@@ -37,7 +37,7 @@ php artisan queue:work   # envoie les emails de livraison
 | Admin  | `admin@universconnaissance.test`   | `password`   |
 | Client | `client@universconnaissance.test`  | `password`   |
 
-Le client possède déjà deux e-books. En local, `PAYMENT_GATEWAY=fake` affiche une **page de paiement simulée** (« Confirmer » / « Simuler un échec ») : tout le parcours (commande → paiement → email → téléchargement filigrané) fonctionne sans clé API. Les emails sont écrits dans `storage/logs/laravel.log` (`MAIL_MAILER=log`).
+Le client possède déjà deux e-books. En local, `PAYMENT_GATEWAY=fake` remplace la page Chariow par une **page de paiement simulée** (nom, email, téléphone, puis « Payer » ou « Simuler un échec ») : tout le parcours sans connexion (paiement → compte créé → email → téléchargement filigrané) fonctionne sans aucune clé. Les emails sont écrits dans `storage/logs/laravel.log` (`MAIL_MAILER=log`).
 
 ### Tests et style
 
@@ -50,30 +50,32 @@ php artisan test         # 86 tests Feature (SQLite en mémoire)
 
 ## 2. Configuration Chariow
 
-Le paiement passe par [Chariow](https://chariow.dev) (checkout hébergé : Mobile Money, carte bancaire). **Chez Chariow, le prix est défini sur le produit** : chaque e-book du site doit donc avoir son produit Chariow.
+Le paiement passe par [Chariow](https://chariow.dev) (Mobile Money, carte bancaire). **Le client n'a pas besoin de se connecter** : le bouton « Acheter » l'envoie directement sur la page de paiement Chariow du produit, où il saisit nom, email et téléphone.
 
 1. Dans le tableau de bord Chariow, créez un produit par e-book, **au même prix en FCFA** que sur le site.
-   ⚠️ N'y joignez pas le fichier complet (ou mettez une simple note « Votre e-book est dans votre espace Univers Connaissance ») : sinon Chariow livrerait lui-même le fichier, sans filigrane ni limite de téléchargements.
-2. Copiez l'identifiant du produit (`prd_…`) dans **Admin > E-books > Modifier > ID du produit Chariow** (ou colonne `chariow_product_id` de l'import CSV). Un e-book non lié affiche « pas encore disponible à l'achat » et un badge « Non lié à Chariow » dans l'admin.
-3. Créez une clé API (Paramètres > API) et un **Pulse** (Automatisations > Pulses) :
+   ⚠️ N'y joignez pas le fichier complet (ou mettez une simple note « Votre e-book arrive par email de la part d'Univers Connaissance ») : sinon Chariow livrerait lui-même le fichier, sans filigrane ni limite de téléchargements.
+2. Pour chaque e-book, dans **Admin > E-books > Modifier**, renseignez :
+   - **ID du produit Chariow** (`prd_…`) : sert à reconnaître le livre quand la vente est notifiée ;
+   - **Lien de la page de paiement Chariow** (`https://…`) : destination du bouton « Acheter ».
+   Sans ces deux champs, le livre affiche « Bientôt disponible » (badge « Non lié à Chariow » dans l'admin). Colonnes `chariow_product_id` / `chariow_product_url` dans l'import CSV.
+3. Créez un **Pulse** (Automatisations > Pulses) :
    - URL : `https://votre-domaine/webhooks/payment`
-   - Événements : `successful.sale`, `failed.sale`, `abandoned.sale`
-4. Dans `.env` :
+   - Événements : `successful.sale` (indispensable), `failed.sale`, `abandoned.sale`
+4. Facultatif : si Chariow permet une redirection après achat, indiquez `https://votre-domaine/merci?sale={sale_id}` (sinon le client reste sur la page de remerciement Chariow et reçoit notre email).
+5. Dans `.env`, puis `php artisan config:clear` :
    ```dotenv
    PAYMENT_GATEWAY=chariow
-   CHARIOW_API_KEY=sk_live_xxx
    CHARIOW_PULSE_SECRET=whsec_xxx
-   CHARIOW_PAYMENT_CURRENCY=XOF
    ```
-5. `php artisan config:clear`
 
 Fonctionnement :
 
-- `POST /checkout/{slug}` enregistre le téléphone du client (exigé par Chariow), crée (ou réutilise) une commande `pending`, appelle `POST /v1/checkout` avec `product_id`, les coordonnées du client, `redirect_url` (page de retour) et `custom_metadata.order_reference`, puis redirige vers la page de paiement Chariow.
-- Le **Pulse** est la source de vérité : signature `x-chariow-signature: sha256=HMAC-SHA256(corps brut, secret)` vérifiée, produit de la vente comparé au produit lié au livre (un écart de prix est seulement journalisé), traitement **idempotent** (Chariow réessaie jusqu'à 5 fois ; aucun double email).
-- La page de retour (`/commande/{ref}/retour`) revérifie la vente via `GET /v1/sales/{id}` : utile en local quand le Pulse ne peut pas joindre votre machine (sinon, tunnel type ngrok/cloudflared).
+- `GET /acheter/{slug}` redirige vers le lien Chariow du livre (aucune commande n'est créée avant le paiement). Un client connecté qui possède déjà le livre est envoyé vers « Mes achats ».
+- Le **Pulse** `successful.sale` crée tout : signature `x-chariow-signature: sha256=HMAC-SHA256(corps brut, secret)` vérifiée → livre retrouvé par l'ID produit → client retrouvé **par email** (ou compte « invité » créé automatiquement) → commande payée + droit de téléchargement → email de livraison avec lien de téléchargement **utilisable sans connexion** et, pour un nouveau client, lien « Créer mon mot de passe ».
+- Traitement **idempotent** : la référence de vente Chariow est unique en base ; les renvois de Chariow (jusqu'à 5) ne créent ni doublon ni second email. Un écart entre le prix Chariow et celui du site est journalisé.
+- Les échecs et abandons ne créent rien.
 
-**Changer de prestataire** : implémentez `App\Payments\Contracts\PaymentGateway` (`createPayment`, `parseWebhook`, `fetchStatus`), puis ajoutez-le dans `App\Payments\PaymentManager` et `config/payment.php`.
+**Changer de prestataire** : implémentez `App\Payments\Contracts\PaymentGateway` (`checkoutUrl`, `bookFor`, `parseWebhook`), puis ajoutez-le dans `App\Payments\PaymentManager` et `config/payment.php`.
 
 ---
 
@@ -120,7 +122,7 @@ Check-list :
 | Back-office | `app/Http/Controllers/Admin`, `resources/views/admin` |
 | Couleurs / thème | `tailwind.config.js` (échelle `brand` dérivée de #10BAF1), `resources/css/app.css` |
 
-**Sécurité des téléchargements** : URL signée et temporaire **+** utilisateur connecté propriétaire d'une commande payée (policy) **+** jeton non expiré **+** quota (`EBOOK_MAX_DOWNLOADS`, incrément atomique). Les PDF sont filigranés à la volée (nom, email, n° de commande) ; si un PDF n'est pas importable par FPDI (compression objet PDF ≥ 1.5), il est servi sans filigrane et l'erreur est journalisée — voir « Limites ».
+**Sécurité des téléchargements** : URL signée et temporaire (72 h) **+** jeton secret non expiré **+** commande payée **+** quota (`EBOOK_MAX_DOWNLOADS`, incrément atomique). Le lien reçu par email fonctionne sans connexion (achat sans compte) ; un utilisateur connecté avec un autre compte est refusé, et depuis « Mes achats » un lien neuf est régénéré à la demande. Les PDF sont filigranés à la volée (nom, email, n° de commande) ; si un PDF n'est pas importable par FPDI (compression objet PDF ≥ 1.5), il est servi sans filigrane et l'erreur est journalisée — voir « Limites ».
 
 **Rate limiting** : connexion (Breeze, 5 essais), checkout (10/min), webhook (120/min), téléchargements (10/min), avis (5/min).
 

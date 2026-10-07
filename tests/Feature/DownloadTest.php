@@ -76,9 +76,18 @@ class DownloadTest extends TestCase
         $this->actingAs(User::factory()->create())->get(route('library.download', [$this->order, 'pdf']))->assertForbidden();
     }
 
-    public function test_guest_must_log_in(): void
+    public function test_email_link_works_without_login(): void
     {
-        $this->get($this->signedUrl())->assertRedirect('/login');
+        $this->get($this->signedUrl())->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertGuest();
+    }
+
+    public function test_unpaid_order_link_is_refused(): void
+    {
+        $url = $this->signedUrl();
+        $this->order->update(['status' => Order::STATUS_PENDING]);
+
+        $this->get($url)->assertForbidden();
     }
 
     public function test_download_limit_is_enforced(): void

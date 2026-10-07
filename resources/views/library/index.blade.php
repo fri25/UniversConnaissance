@@ -64,7 +64,7 @@
                                     <td>{{ $order->created_at->translatedFormat('d M Y') }}</td>
                                     <td>
                                         @if (! in_array($order->book_id, auth()->user()->ownedBookIds(), true) && in_array($order->status, ['pending', 'failed']))
-                                            <a href="{{ route('checkout.show', $order->book) }}" class="link text-xs">Payer</a>
+                                            <a href="{{ route('books.buy', $order->book) }}" class="link text-xs">Payer</a>
                                         @endif
                                     </td>
                                 </tr>

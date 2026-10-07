@@ -12,13 +12,22 @@ Télécharger en {{ $format }}
 
 - Lien valable jusqu'au **{{ $download->expires_at->timezone(config('app.timezone'))->translatedFormat('d F Y à H:i') }}**
 - Téléchargements restants : **{{ $download->remaining() }}** / {{ $download->max_downloads }}
-- Vous devrez être connecté(e) à votre compte pour télécharger.
 
+@if ($setPasswordUrl)
+**Retrouvez vos e-books à tout moment** : un compte a été créé avec cette adresse email. Choisissez votre mot de passe pour accéder à « Mes achats » et donner votre avis.
+
+<x-mail::button :url="$setPasswordUrl" color="success">
+Créer mon mot de passe
+</x-mail::button>
+
+<small>Ce lien est valable 60 minutes. Passé ce délai, utilisez « Mot de passe oublié » sur la page de connexion.</small>
+@else
 Votre e-book est aussi disponible à tout moment dans votre bibliothèque :
 
 <x-mail::button :url="route('dashboard')" color="success">
 Ouvrir « Mes achats »
 </x-mail::button>
+@endif
 
 Le fichier est personnalisé à votre nom : merci de ne pas le partager.
 

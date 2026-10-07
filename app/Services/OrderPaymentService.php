@@ -4,11 +4,16 @@ namespace App\Services;
 
 use App\Mail\EbookDelivered;
 use App\Models\Order;
+use App\Models\User;
+use App\Payments\Contracts\PaymentGateway;
 use App\Payments\PaymentStatus;
 use App\Payments\WebhookEvent;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class OrderPaymentService
 {
@@ -18,30 +23,82 @@ class OrderPaymentService
      * Applique un événement de paiement. Idempotent : rejouer le même
      * événement ne change rien et n'envoie pas de second email.
      *
-     * @return bool true si la commande a changé d'état
+     * @return bool true si une commande a été créée ou a changé d'état
      */
-    public function handle(WebhookEvent $event): bool
+    public function handle(WebhookEvent $event, PaymentGateway $gateway): bool
     {
         $order = $this->findOrder($event);
 
-        if ($order === null) {
-            Log::warning('Paiement : commande introuvable pour le webhook.', [
-                'payment_reference' => $event->paymentReference,
-                'order_reference' => $event->orderReference,
-                'event' => $event->eventName,
-            ]);
+        if ($order !== null) {
+            return match ($event->status) {
+                PaymentStatus::Paid => $this->markAsPaid($order, $event->paymentReference),
+                PaymentStatus::Failed => $this->markAsFailed($order),
+                PaymentStatus::Refunded => $this->markAsRefunded($order),
+                PaymentStatus::Pending => false,
+            };
+        }
 
+        // Échec ou abandon d'une vente jamais enregistrée chez nous : rien à faire.
+        if ($event->status !== PaymentStatus::Paid) {
             return false;
         }
 
-        return match ($event->status) {
-            PaymentStatus::Paid => $this->productMatches($order, $event)
-                ? $this->markAsPaid($order, $event->paymentReference, $event->productReference ? null : $event->amount)
-                : false,
-            PaymentStatus::Failed => $this->markAsFailed($order),
-            PaymentStatus::Refunded => $this->markAsRefunded($order),
-            PaymentStatus::Pending => false,
-        };
+        return $this->recordSale($event, $gateway) !== null;
+    }
+
+    /**
+     * Enregistre une vente conclue sur la page du prestataire par un client
+     * qui ne s'est pas connecté : on retrouve (ou crée) son compte à partir de
+     * l'email saisi au paiement, puis on lui livre l'e-book.
+     */
+    public function recordSale(WebhookEvent $event, PaymentGateway $gateway): ?Order
+    {
+        $book = $event->productReference !== null ? $gateway->bookFor($event->productReference) : null;
+        $email = $event->customerEmail();
+
+        if ($book === null || $email === null || $event->paymentReference === null) {
+            Log::error('Paiement : vente impossible à rattacher (livre, email ou référence manquant).', [
+                'payment_reference' => $event->paymentReference,
+                'product' => $event->productReference,
+                'email' => $email,
+            ]);
+
+            return null;
+        }
+
+        if ($event->amount !== null && $event->amount !== $book->price) {
+            Log::warning('Paiement : montant encaissé différent du prix affiché sur le site (vérifiez le prix chez le prestataire).', [
+                'book' => $book->slug, 'site' => $book->price, 'paid' => $event->amount, 'sale' => $event->paymentReference,
+            ]);
+        }
+
+        $user = $this->customerFor($event, $email);
+
+        try {
+            $order = DB::transaction(function () use ($event, $gateway, $book, $user) {
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'book_id' => $book->id,
+                    'amount' => $event->amount ?? $book->price,
+                    'currency' => config('payment.currency'),
+                    'status' => Order::STATUS_PAID,
+                    'gateway' => $gateway->name(),
+                    'payment_reference' => $event->paymentReference,
+                    'paid_at' => now(),
+                ]);
+
+                $this->downloads->issue($order);
+
+                return $order;
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Même vente reçue deux fois en parallèle : déjà enregistrée.
+            return null;
+        }
+
+        $this->sendDeliveryEmail($order);
+
+        return $order;
     }
 
     public function markAsPaid(Order $order, ?string $paymentReference = null, ?int $amount = null): bool
@@ -115,31 +172,34 @@ class OrderPaymentService
     }
 
     /**
-     * Quand le prestataire fixe le prix par produit (Chariow), on vérifie que la
-     * vente porte bien sur le produit lié au livre commandé.
+     * Compte existant (même email) ou nouveau compte « invité » : le client
+     * choisira son mot de passe via le lien reçu dans l'email de livraison.
      */
-    private function productMatches(Order $order, WebhookEvent $event): bool
+    private function customerFor(WebhookEvent $event, string $email): User
     {
-        if ($event->productReference === null) {
-            return true;
+        $existing = User::where('email', $email)->first();
+        if ($existing) {
+            return $existing;
         }
 
-        $expected = $order->book()->value('chariow_product_id');
-        if ($expected === $event->productReference) {
-            if ($event->amount !== null && $event->amount !== $order->amount) {
-                Log::warning('Paiement : montant Chariow différent du prix du site (vérifiez le prix du produit Chariow).', [
-                    'order' => $order->reference, 'site' => $order->amount, 'chariow' => $event->amount,
-                ]);
-            }
+        $country = strtoupper((string) ($event->customer['country'] ?? ''));
 
-            return true;
+        try {
+            $user = User::create([
+                'name' => Str::limit($event->customerName(), 255, ''),
+                'email' => $email,
+                'phone' => $event->customer['phone'] ?? null,
+                'phone_country' => strlen($country) === 2 ? $country : null,
+                'password' => Hash::make(Str::random(40)),
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            // Créé entre-temps par un webhook concurrent.
+            return User::where('email', $email)->firstOrFail();
         }
 
-        Log::error('Paiement : produit de la vente différent du produit commandé.', [
-            'order' => $order->reference, 'expected' => $expected, 'received' => $event->productReference,
-        ]);
+        $user->forceFill(['is_guest' => true])->save();
 
-        return false;
+        return $user;
     }
 
     private function findOrder(WebhookEvent $event): ?Order

@@ -107,8 +107,10 @@
                                     Télécharger ({{ strtoupper($fmt) }})
                                 </a>
                             @endforeach
+                        @elseif ($book->isPurchasable())
+                            <a href="{{ route('books.buy', $book) }}" class="btn-primary flex-1 py-3 text-base">Acheter maintenant</a>
                         @else
-                            <a href="{{ route('checkout.show', $book) }}" class="btn-primary flex-1 py-3 text-base">Acheter maintenant</a>
+                            <span class="btn-outline flex-1 cursor-not-allowed py-3 text-base opacity-70" aria-disabled="true">Bientôt disponible</span>
                         @endif
                     </div>
                     @if ($purchase)
@@ -297,8 +299,10 @@
             </div>
             @if ($purchase)
                 <a href="{{ route('dashboard') }}" class="btn-solid">Télécharger</a>
+            @elseif ($book->isPurchasable())
+                <a href="{{ route('books.buy', $book) }}" class="btn-primary">Acheter maintenant</a>
             @else
-                <a href="{{ route('checkout.show', $book) }}" class="btn-primary">Acheter maintenant</a>
+                <span class="btn-outline opacity-70" aria-disabled="true">Bientôt disponible</span>
             @endif
         </div>
     </div>

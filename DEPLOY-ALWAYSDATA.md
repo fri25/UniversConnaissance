@@ -150,7 +150,8 @@ Si la fréquence d'une minute est refusée, prenez la plus courte proposée : le
 Suivez la section « Configuration Chariow » du `README.md`. Spécifique à alwaysdata :
 
 - URL du Pulse : `https://moncompte.alwaysdata.net/webhooks/payment`
-- Dans `.env` : `PAYMENT_GATEWAY=chariow`, `CHARIOW_API_KEY`, `CHARIOW_PULSE_SECRET`, puis `APP_ENV=production`
+- Pour chaque e-book (Admin → E-books → Modifier) : ID **et** lien de la page de paiement du produit Chariow
+- Dans `.env` : `PAYMENT_GATEWAY=chariow`, `CHARIOW_PULSE_SECRET`, puis `APP_ENV=production`
 - `bash deploy.sh`
 
 ## 11. Mettre à jour le site

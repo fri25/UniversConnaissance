@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\EbookDelivered;
 use App\Models\Book;
 use App\Models\Order;
+use App\Models\User;
 use App\Payments\Gateways\ChariowGateway;
 use Closure;
 use Illuminate\Contracts\Http\Kernel;
@@ -20,23 +21,23 @@ class PaymentWebhookTest extends TestCase
 
     private const SECRET = 'whsec_test_secret';
 
+    private Book $book;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         config([
             'payment.default' => 'chariow',
-            'payment.gateways.chariow.api_key' => 'sk_test',
             'payment.gateways.chariow.pulse_secret' => self::SECRET,
         ]);
         Mail::fake();
-    }
 
-    private function order(array $attributes = []): Order
-    {
-        $book = Book::factory()->create(['chariow_product_id' => 'prd_livre', 'price' => 2500]);
-
-        return Order::factory()->for($book)->create(['gateway' => 'chariow', 'amount' => 2500] + $attributes);
+        $this->book = Book::factory()->create([
+            'price' => 2500,
+            'chariow_product_id' => 'prd_livre',
+            'chariow_product_url' => 'https://boutique.mychariow.com/p/livre',
+        ]);
     }
 
     private function pulse(array $payload, ?string $signature = null): TestResponse
@@ -51,110 +52,132 @@ class PaymentWebhookTest extends TestCase
         ], $body);
     }
 
-    private function sale(Order $order, string $event = 'successful.sale', array $sale = [], string $product = 'prd_livre'): array
+    /**
+     * Charge utile au format des Pulses Chariow.
+     */
+    private function sale(string $id = 'sal_1001', string $event = 'successful.sale', string $product = 'prd_livre', string $email = 'awa@example.com', int $amount = 2500): array
     {
         return [
             'event' => $event,
-            'sale' => $sale + [
-                'id' => $order->payment_reference,
-                'status' => 'completed',
-                'amount' => ['value' => $order->amount, 'currency' => 'XOF'],
-                'custom_metadata' => ['order_reference' => $order->reference],
+            'sale' => [
+                'id' => $id,
+                'status' => $event === 'successful.sale' ? 'completed' : 'failed',
+                'amount' => ['value' => $amount, 'formatted' => $amount.' F CFA', 'currency' => 'XOF'],
+                'custom_metadata' => null,
             ],
-            'product' => ['id' => $product],
-            'customer' => ['email' => $order->user->email],
+            'product' => ['id' => $product, 'name' => 'Livre'],
+            'customer' => [
+                'id' => 'cus_1', 'name' => 'Awa Diallo', 'first_name' => 'Awa', 'last_name' => 'Diallo',
+                'email' => $email, 'phone' => '+22901970000', 'country' => 'BJ',
+            ],
         ];
     }
 
-    public function test_successful_sale_marks_order_paid_and_sends_email(): void
+    public function test_sale_from_guest_creates_account_order_and_sends_email(): void
     {
-        $order = $this->order(['payment_reference' => 'sal_1001']);
+        $this->pulse($this->sale())->assertOk()->assertJson(['message' => 'Commande mise à jour.']);
 
-        $this->pulse($this->sale($order))->assertOk();
-
-        $order->refresh();
+        $order = Order::sole();
         $this->assertTrue($order->isPaid());
+        $this->assertSame('sal_1001', $order->payment_reference);
+        $this->assertSame('chariow', $order->gateway);
+        $this->assertTrue($order->book->is($this->book));
         $this->assertNotNull($order->download);
-        Mail::assertQueued(EbookDelivered::class, 1);
+
+        $user = $order->user;
+        $this->assertSame('awa@example.com', $user->email);
+        $this->assertSame('Awa Diallo', $user->name);
+        $this->assertSame('BJ', $user->phone_country);
+        $this->assertTrue($user->is_guest);
+
+        Mail::assertQueued(EbookDelivered::class, fn ($mail) => $mail->hasTo('awa@example.com'));
     }
 
-    public function test_order_is_found_by_metadata_when_sale_id_is_unknown(): void
+    public function test_delivery_email_offers_password_creation_to_new_customers(): void
     {
-        $order = $this->order(['payment_reference' => null]);
+        $this->pulse($this->sale())->assertOk();
 
-        $this->pulse($this->sale($order, sale: ['id' => 'sal_inconnu']))->assertOk();
+        $html = (new EbookDelivered(Order::sole()))->render();
 
-        $order->refresh();
-        $this->assertTrue($order->isPaid());
-        $this->assertSame('sal_inconnu', $order->payment_reference);
+        $this->assertStringContainsString('Créer mon mot de passe', $html);
+        $this->assertStringContainsString('/reset-password/', $html);
+        $this->assertStringContainsString('/telecharger/', $html);
+    }
+
+    public function test_sale_is_attached_to_existing_account_with_same_email(): void
+    {
+        $client = User::factory()->create(['email' => 'awa@example.com']);
+
+        $this->pulse($this->sale(email: 'AWA@example.com'))->assertOk();
+
+        $this->assertTrue($client->hasPurchased($this->book));
+        $this->assertDatabaseCount('users', 1);
+        $this->assertStringNotContainsString('Créer mon mot de passe', (new EbookDelivered(Order::sole()))->render());
     }
 
     public function test_pulse_is_idempotent(): void
     {
-        $order = $this->order(['payment_reference' => 'sal_1002']);
-
-        $this->pulse($this->sale($order))->assertOk()->assertJson(['message' => 'Commande mise à jour.']);
-        $token = $order->fresh()->download->token;
+        $this->pulse($this->sale())->assertOk();
+        $token = Order::sole()->download->token;
 
         // Chariow réessaie jusqu'à 5 fois la même livraison.
-        $this->pulse($this->sale($order))->assertOk()->assertJson(['message' => 'Déjà traité.']);
-        $this->pulse($this->sale($order))->assertOk();
+        $this->pulse($this->sale())->assertOk()->assertJson(['message' => 'Déjà traité.']);
+        $this->pulse($this->sale())->assertOk();
 
-        $this->assertSame($token, $order->fresh()->download->token);
+        $this->assertDatabaseCount('orders', 1);
         $this->assertDatabaseCount('downloads', 1);
+        $this->assertSame($token, Order::sole()->download->token);
         Mail::assertQueued(EbookDelivered::class, 1);
     }
 
     public function test_invalid_signature_is_rejected(): void
     {
-        $order = $this->order(['payment_reference' => 'sal_1003']);
+        $this->pulse($this->sale(), 'sha256=deadbeef')->assertStatus(400);
+        $this->pulse($this->sale(), '')->assertStatus(400);
+        $this->pulse($this->sale(), ChariowGateway::sign('autre corps', self::SECRET))->assertStatus(400);
 
-        $this->pulse($this->sale($order), 'sha256=deadbeef')->assertStatus(400);
-        $this->pulse($this->sale($order), '')->assertStatus(400);
-        $this->pulse($this->sale($order), ChariowGateway::sign('autre corps', self::SECRET))->assertStatus(400);
-
-        $this->assertFalse($order->fresh()->isPaid());
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 0);
         Mail::assertNothingQueued();
     }
 
-    public function test_sale_for_another_product_does_not_validate_order(): void
+    public function test_sale_of_unknown_product_is_not_delivered(): void
     {
-        $order = $this->order(['payment_reference' => 'sal_1004']);
+        $this->pulse($this->sale(product: 'prd_inconnu'))->assertOk();
 
-        $this->pulse($this->sale($order, product: 'prd_moins_cher'))->assertOk();
-
-        $this->assertFalse($order->fresh()->isPaid());
+        $this->assertDatabaseCount('orders', 0);
         Mail::assertNothingQueued();
     }
 
-    public function test_price_difference_with_chariow_is_logged_but_product_match_wins(): void
+    public function test_sale_without_valid_email_is_not_delivered(): void
     {
-        $order = $this->order(['payment_reference' => 'sal_1005']);
+        $this->pulse($this->sale(email: 'pas-un-email'))->assertOk();
 
-        $this->pulse($this->sale($order, sale: ['amount' => ['value' => 2000, 'currency' => 'XOF']]))->assertOk();
-
-        $this->assertTrue($order->fresh()->isPaid());
+        $this->assertDatabaseCount('orders', 0);
     }
 
-    public function test_failed_and_abandoned_sales_mark_order_failed(): void
+    public function test_price_difference_is_logged_and_paid_amount_recorded(): void
     {
-        $failed = $this->order(['payment_reference' => 'sal_1006']);
-        $abandoned = $this->order(['payment_reference' => 'sal_1007']);
+        $this->pulse($this->sale(amount: 2000))->assertOk();
 
-        $this->pulse($this->sale($failed, 'failed.sale'))->assertOk();
-        $this->pulse($this->sale($abandoned, 'abandoned.sale'))->assertOk();
+        $this->assertSame(2000, Order::sole()->amount);
+    }
 
-        $this->assertSame(Order::STATUS_FAILED, $failed->fresh()->status);
-        $this->assertSame(Order::STATUS_FAILED, $abandoned->fresh()->status);
+    public function test_failed_and_abandoned_sales_record_nothing(): void
+    {
+        $this->pulse($this->sale('sal_2', 'failed.sale'))->assertOk();
+        $this->pulse($this->sale('sal_3', 'abandoned.sale'))->assertOk();
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 0);
     }
 
     public function test_failed_event_cannot_downgrade_a_paid_order(): void
     {
-        $order = $this->order(['payment_reference' => 'sal_1008', 'status' => Order::STATUS_PAID, 'paid_at' => now()]);
+        $this->pulse($this->sale('sal_4'))->assertOk();
+        $this->pulse($this->sale('sal_4', 'failed.sale'))->assertOk();
 
-        $this->pulse($this->sale($order, 'failed.sale'))->assertOk();
-
-        $this->assertTrue($order->fresh()->isPaid());
+        $this->assertTrue(Order::sole()->isPaid());
     }
 
     public function test_other_events_are_acknowledged_and_ignored(): void

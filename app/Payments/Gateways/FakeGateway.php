@@ -2,18 +2,16 @@
 
 namespace App\Payments\Gateways;
 
-use App\Models\Order;
+use App\Models\Book;
 use App\Payments\Contracts\PaymentGateway;
 use App\Payments\Exceptions\InvalidWebhookSignature;
-use App\Payments\PaymentSession;
 use App\Payments\PaymentStatus;
 use App\Payments\WebhookEvent;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
- * Prestataire simulé pour le développement local et les tests.
- * Interdit en production (voir PaymentManager).
+ * Prestataire simulé pour le développement local, la démo et les tests.
+ * Sa page imite celle de Chariow (coordonnées + paiement). Interdit en production.
  */
 class FakeGateway implements PaymentGateway
 {
@@ -29,9 +27,14 @@ class FakeGateway implements PaymentGateway
         return 'fake';
     }
 
-    public function createPayment(Order $order): PaymentSession
+    public function checkoutUrl(Book $book): ?string
     {
-        return new PaymentSession('fake_'.Str::lower(Str::random(16)), route('payment.fake.show', $order));
+        return route('payment.fake.show', $book);
+    }
+
+    public function bookFor(string $productReference): ?Book
+    {
+        return Book::where('slug', $productReference)->first();
     }
 
     public function parseWebhook(Request $request): WebhookEvent
@@ -50,13 +53,9 @@ class FakeGateway implements PaymentGateway
             orderReference: $payload['order_reference'] ?? null,
             amount: isset($payload['amount']) ? (int) $payload['amount'] : null,
             eventName: 'fake.'.($payload['status'] ?? 'unknown'),
+            productReference: $payload['book'] ?? null,
+            customer: (array) ($payload['customer'] ?? []),
         );
-    }
-
-    public function fetchStatus(string $paymentReference): PaymentStatus
-    {
-        // La simulation confirme la commande directement : pas d'état distant.
-        return PaymentStatus::Pending;
     }
 
     public function sign(string $payload): string

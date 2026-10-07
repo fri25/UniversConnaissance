@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Password;
 
 class EbookDelivered extends Mailable implements ShouldQueue
 {
@@ -44,6 +45,13 @@ class EbookDelivered extends Mailable implements ShouldQueue
                 'book' => $this->order->book,
                 'download' => $download,
                 'links' => $links,
+                // Compte créé automatiquement à l'achat : lien pour choisir un mot de passe.
+                'setPasswordUrl' => $this->order->user->is_guest
+                    ? route('password.reset', [
+                        'token' => Password::broker()->createToken($this->order->user),
+                        'email' => $this->order->user->email,
+                    ])
+                    : null,
             ],
         );
     }

@@ -102,8 +102,13 @@
                 <div>
                     <label for="chariow_product_id" class="label">ID du produit Chariow</label>
                     <input id="chariow_product_id" name="chariow_product_id" value="{{ old('chariow_product_id', $book->chariow_product_id) }}" class="input font-mono text-sm" placeholder="prd_abc123">
-                    <p class="mt-1 text-xs text-slate-500">Créez le produit dans Chariow au <strong>même prix</strong>, puis collez son identifiant. Sans lui, l'achat est indisponible.</p>
                     <x-input-error :messages="$errors->get('chariow_product_id')" class="mt-1" />
+                </div>
+                <div>
+                    <label for="chariow_product_url" class="label">Lien de la page de paiement Chariow</label>
+                    <input id="chariow_product_url" type="url" name="chariow_product_url" value="{{ old('chariow_product_url', $book->chariow_product_url) }}" class="input text-sm" placeholder="https://maboutique.mychariow.com/p/mon-livre">
+                    <p class="mt-1 text-xs text-slate-500">Créez le produit dans Chariow au <strong>même prix</strong>, puis renseignez son ID et son lien. Le bouton « Acheter » y envoie directement le client, sans connexion. Sans ces deux champs, l'achat est indisponible.</p>
+                    <x-input-error :messages="$errors->get('chariow_product_url')" class="mt-1" />
                 </div>
                 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_active" value="1" class="rounded text-brand-700" @checked(old('is_active', $book->is_active))> Actif (visible en boutique)</label>
                 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_featured" value="1" class="rounded text-brand-700" @checked(old('is_featured', $book->is_featured))> Mis en avant</label>

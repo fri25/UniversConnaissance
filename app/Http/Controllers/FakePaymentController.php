@@ -2,42 +2,62 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\Models\Book;
+use App\Payments\PaymentManager;
+use App\Payments\PaymentStatus;
+use App\Payments\WebhookEvent;
 use App\Services\OrderPaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
- * Page de paiement simulée (développement local uniquement).
+ * Page de paiement simulée (développement local / démo) : elle imite la page
+ * Chariow, où le client saisit ses coordonnées sans être connecté.
  */
 class FakePaymentController extends Controller
 {
-    public function show(Order $order): View
+    public function show(Request $request, Book $book): View
     {
-        $this->guard($order);
+        $this->guard($book);
 
-        return view('checkout.fake', ['order' => $order->load('book')]);
+        return view('checkout.fake', ['book' => $book, 'user' => $request->user()]);
     }
 
-    public function complete(Request $request, Order $order, OrderPaymentService $service): RedirectResponse
+    public function complete(Request $request, Book $book, PaymentManager $payments, OrderPaymentService $service): RedirectResponse
     {
-        $this->guard($order);
+        $this->guard($book);
 
-        $request->validate(['outcome' => ['required', 'in:success,failure']]);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'outcome' => ['required', 'in:success,failure'],
+        ], [], ['name' => 'nom', 'phone' => 'téléphone']);
 
-        $request->input('outcome') === 'success'
-            ? $service->markAsPaid($order, $order->payment_reference, $order->amount)
-            : $service->markAsFailed($order);
+        if ($data['outcome'] === 'failure') {
+            return back()->withInput()->with('error', 'Paiement refusé (simulation). Aucun montant n\'a été débité.');
+        }
 
-        return redirect()->route('checkout.return', $order);
+        $sale = 'fake_'.Str::lower(Str::random(16));
+
+        // Même chemin que le webhook d'un vrai prestataire.
+        $service->recordSale(new WebhookEvent(
+            status: PaymentStatus::Paid,
+            paymentReference: $sale,
+            amount: $book->price,
+            eventName: 'fake.paid',
+            productReference: $book->slug,
+            customer: ['email' => $data['email'], 'name' => $data['name'], 'phone' => $data['phone'] ?? null, 'country' => 'BJ'],
+        ), $payments->gateway('fake'));
+
+        return redirect()->route('checkout.thanks', ['sale' => $sale]);
     }
 
-    private function guard(Order $order): void
+    private function guard(Book $book): void
     {
-        abort_if(app()->isProduction() || $order->gateway !== 'fake', 404);
-        Gate::authorize('view', $order);
-        abort_unless($order->user_id === auth()->id(), 403);
+        abort_if(app()->isProduction() || config('payment.default') !== 'fake', 404);
+        abort_unless($book->is_active, 404);
     }
 }

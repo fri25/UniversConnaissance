@@ -25,7 +25,7 @@ class PaymentWebhookController extends Controller
             return response()->json(['message' => 'Événement ignoré.']);
         }
 
-        $changed = $service->handle($event);
+        $changed = $service->handle($event, $gateway);
 
         // Toujours 200 une fois la signature validée : le prestataire ne doit
         // pas rejouer indéfiniment un événement déjà traité.

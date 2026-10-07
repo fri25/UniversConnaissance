@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Book;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -45,14 +45,13 @@ class RegistrationTest extends TestCase
         ])->assertSessionHasErrors('phone');
     }
 
-    public function test_registration_returns_to_intended_checkout(): void
+    public function test_customer_created_at_purchase_is_told_to_reset_password(): void
     {
-        $book = Book::factory()->create();
-        $this->get(route('checkout.show', $book))->assertRedirect('/login');
+        User::factory()->create(['email' => 'awa@example.com']);
 
         $this->post('/register', [
-            'name' => 'Client', 'email' => 'client@example.com',
+            'name' => 'Awa', 'email' => 'awa@example.com',
             'password' => 'password', 'password_confirmation' => 'password',
-        ])->assertRedirect(route('checkout.show', $book));
+        ])->assertSessionHasErrors(['email' => 'Un compte existe déjà avec cet email (il a peut-être été créé lors d\'un achat). Utilisez « Mot de passe oublié » pour choisir votre mot de passe.']);
     }
 }

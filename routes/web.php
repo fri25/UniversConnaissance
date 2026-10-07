@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BuyController;
 use App\Http\Controllers\CatalogController;
-use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\FakePaymentController;
 use App\Http\Controllers\HomeController;
@@ -11,6 +11,7 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ThankYouController;
 use Illuminate\Support\Facades\Route;
 
 // --- Vitrine -----------------------------------------------------------------
@@ -26,28 +27,30 @@ Route::view('/mentions-legales', 'pages.legal')->name('pages.legal');
 Route::view('/cgv', 'pages.terms')->name('pages.terms');
 Route::view('/confidentialite', 'pages.privacy')->name('pages.privacy');
 
+// --- Achat sans connexion -----------------------------------------------------
+// « Acheter » redirige vers la page de paiement du prestataire (Chariow).
+Route::get('/acheter/{book:slug}', BuyController::class)->middleware('throttle:checkout')->name('books.buy');
+Route::get('/merci', ThankYouController::class)->name('checkout.thanks');
+
+// Page de paiement simulée (local / démo uniquement).
+Route::get('/paiement/simulation/{book:slug}', [FakePaymentController::class, 'show'])->name('payment.fake.show');
+Route::post('/paiement/simulation/{book:slug}', [FakePaymentController::class, 'complete'])
+    ->middleware('throttle:checkout')->name('payment.fake.complete');
+
+// Lien de téléchargement signé envoyé par email : utilisable sans connexion.
+Route::get('/telecharger/{download:token}/{format}', DownloadController::class)
+    ->whereIn('format', ['pdf', 'epub'])
+    ->middleware(['signed', 'throttle:downloads'])->name('downloads.file');
+
 // --- Webhook prestataire de paiement (hors CSRF, signature HMAC) -------------
 Route::post('/webhooks/payment', PaymentWebhookController::class)
     ->middleware('throttle:webhook')->name('webhooks.payment');
 
 // --- Espace client -------------------------------------------------------------
 Route::middleware('auth')->group(function () {
-    Route::get('/checkout/{book:slug}', [CheckoutController::class, 'show'])->name('checkout.show');
-    Route::post('/checkout/{book:slug}', [CheckoutController::class, 'store'])
-        ->middleware('throttle:checkout')->name('checkout.store');
-    Route::get('/commande/{order}/retour', [CheckoutController::class, 'return'])->name('checkout.return');
-
-    Route::get('/paiement/simulation/{order}', [FakePaymentController::class, 'show'])->name('payment.fake.show');
-    Route::post('/paiement/simulation/{order}', [FakePaymentController::class, 'complete'])
-        ->middleware('throttle:checkout')->name('payment.fake.complete');
-
     Route::get('/dashboard', [LibraryController::class, 'index'])->name('dashboard');
     Route::get('/mes-achats/{order}/telecharger/{format}', [LibraryController::class, 'download'])
         ->whereIn('format', ['pdf', 'epub'])->name('library.download');
-
-    Route::get('/telecharger/{download:token}/{format}', DownloadController::class)
-        ->whereIn('format', ['pdf', 'epub'])
-        ->middleware(['signed', 'throttle:downloads'])->name('downloads.file');
 
     Route::post('/product/{book:slug}/avis', [ReviewController::class, 'store'])
         ->middleware('throttle:reviews')->name('reviews.store');

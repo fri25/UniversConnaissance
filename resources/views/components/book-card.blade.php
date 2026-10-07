@@ -36,8 +36,10 @@
             <a href="{{ route('books.show', $book) }}" class="btn-outline !px-3 !py-2 text-xs">Voir détails</a>
             @if ($owned)
                 <a href="{{ route('dashboard') }}" class="btn-solid !px-3 !py-2 text-xs">Télécharger</a>
+            @elseif ($book->isPurchasable())
+                <a href="{{ route('books.buy', $book) }}" class="btn-primary !px-3 !py-2 text-xs">Acheter</a>
             @else
-                <a href="{{ route('checkout.show', $book) }}" class="btn-primary !px-3 !py-2 text-xs">Acheter</a>
+                <span class="btn-ghost !px-3 !py-2 text-xs opacity-70" aria-disabled="true">Bientôt</span>
             @endif
         </div>
     </div>

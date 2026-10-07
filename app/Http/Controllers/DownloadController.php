@@ -5,23 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Download;
 use App\Services\DownloadService;
 use App\Services\PdfWatermarker;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Sert le fichier complet depuis le stockage privé. Triple contrôle :
- * URL signée (middleware), utilisateur connecté propriétaire de la commande
- * payée (policy), jeton non expiré et quota non atteint.
+ * Sert le fichier complet depuis le stockage privé. Contrôles : URL signée et
+ * temporaire (middleware), jeton secret non expiré, commande payée, quota non
+ * atteint. Le client n'a pas besoin d'être connecté (lien reçu par email après
+ * un achat sans compte) ; s'il est connecté avec un autre compte, l'accès est refusé.
+ * Le filigrane nom/email décourage le partage du lien.
  */
 class DownloadController extends Controller
 {
-    public function __invoke(Download $download, string $format, DownloadService $downloads, PdfWatermarker $watermarker): Response
+    public function __invoke(Request $request, Download $download, string $format, DownloadService $downloads, PdfWatermarker $watermarker): Response
     {
         $order = $download->order()->with(['book', 'user'])->firstOrFail();
 
-        Gate::authorize('download', $order);
+        abort_unless($order->isPaid(), 403);
+        abort_if($request->user() && $request->user()->id !== $order->user_id, 403, 'Ce lien appartient à un autre compte.');
 
         abort_if($download->isExpired(), 410, 'Ce lien a expiré. Relancez le téléchargement depuis « Mes achats ».');
         abort_if($download->isExhausted(), 429, 'Nombre maximal de téléchargements atteint.');
