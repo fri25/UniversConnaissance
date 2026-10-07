@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 
 class DemoCatalogSeeder extends Seeder
 {
-    private const CATEGORIES = [
+    public const CATEGORIES = [
         'litterature' => ['Littérature', 'Romans, contes et grands classiques de la littérature francophone.'],
         'developpement-personnel' => ['Développement personnel', 'Habitudes, confiance en soi et productivité pour progresser chaque jour.'],
         'business' => ['Business', 'Entrepreneuriat, finance et stratégie pour bâtir et faire grandir votre activité.'],
@@ -26,7 +26,7 @@ class DemoCatalogSeeder extends Seeder
         'education' => ['Éducation', 'Méthodes d\'apprentissage, philosophie et réussite scolaire.'],
     ];
 
-    private const AUTHORS = [
+    public const AUTHORS = [
         'Victor Hugo' => 'Poète, dramaturge et romancier (1802-1885), figure majeure du romantisme français.',
         'Alexandre Dumas' => 'Romancier (1802-1870), maître du roman d\'aventures historique.',
         'Gustave Flaubert' => 'Romancier (1821-1880), célèbre pour son style d\'une précision remarquable.',
@@ -81,7 +81,7 @@ class DemoCatalogSeeder extends Seeder
         ));
 
         // --- E-books -------------------------------------------------------------
-        foreach ($this->books() as $i => $data) {
+        foreach (self::books() as $i => $data) {
             $slug = Str::slug($data['title']);
             $authorName = $data['author'];
             $category = $categories[$data['categories'][0]];
@@ -195,7 +195,7 @@ class DemoCatalogSeeder extends Seeder
     /**
      * @return list<array<string, mixed>>
      */
-    private function books(): array
+    public static function books(): array
     {
         return [
             [

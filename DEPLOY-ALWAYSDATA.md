@@ -167,6 +167,24 @@ cd ~/univers-connaissance && bash deploy.sh
 
 ---
 
+## 12. Supprimer les données de démonstration
+
+Avant de vendre réellement, retirez les 12 e-books de démo, les comptes de test et les paiements simulés. Vos propres e-books, clients et vraies ventes ne sont pas touchés.
+
+```bash
+cd ~/univers-connaissance
+mysqldump -h mysql-moncompte.alwaysdata.net -u moncompte_uc -p moncompte_uc > ~/sauvegarde.sql   # sauvegarde, par précaution
+
+php artisan uc:make-admin votre@email.com   # 1. votre propre compte administrateur
+php artisan demo:purge                      # 2. aperçu : liste ce qui sera supprimé, ne supprime rien
+php artisan demo:purge --force              # 3. suppression réelle
+```
+
+- Les 5 catégories (Littérature, Business…) sont conservées. Ajoutez `--with-categories` pour retirer celles qui sont restées vides.
+- La commande refuse de s'exécuter si un compte de démo est votre seul administrateur, ou si un e-book de démo a une vraie vente.
+- Après la purge, ne relancez **jamais** `php artisan db:seed` sur ce serveur.
+
+---
 ## En cas de problème
 
 | Symptôme | Piste |
