@@ -36,11 +36,8 @@ class BookRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('books', 'slug')->ignore($book?->id)],
-            'summary' => ['nullable', 'string', 'max:10000'],
-            'table_of_contents' => ['nullable', 'string', 'max:10000'],
-            'isbn' => ['nullable', 'string', 'max:20'],
-            'publisher' => ['nullable', 'string', 'max:255'],
-            'published_year' => ['nullable', 'integer', 'between:1400,'.(date('Y') + 1)],
+            // HTML de l'éditeur : nettoyé par RichText avant enregistrement (images en base64 incluses).
+            'description' => ['nullable', 'string', 'max:15000000'],
             'language' => ['required', Rule::in(array_keys(Book::LANGUAGES))],
             'pages' => ['nullable', 'integer', 'min:1', 'max:20000'],
             'format' => ['required', Rule::in(array_keys(Book::FORMATS))],
@@ -50,14 +47,9 @@ class BookRequest extends FormRequest
             'chariow_product_url' => ['nullable', 'url:https', 'max:500'],
             'is_active' => ['boolean'],
             'is_featured' => ['boolean'],
-            'authors' => ['required', 'array', 'min:1'],
-            'authors.*' => ['integer', 'exists:authors,id'],
-            'categories' => ['required', 'array', 'min:1'],
-            'categories.*' => ['integer', 'exists:categories,id'],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'file' => [$creating ? 'required' : 'nullable', 'file', ...$mainRules, 'max:204800'],
             'epub_file' => [$creating && $format === 'both' ? 'required' : 'nullable', 'file', ...$epubRules, 'max:204800'],
-            'sample' => ['nullable', 'file', 'extensions:pdf,epub', 'max:20480'],
         ];
     }
 

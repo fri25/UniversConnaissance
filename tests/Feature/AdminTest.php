@@ -50,37 +50,95 @@ class AdminTest extends TestCase
     {
         Storage::fake('local');
         Storage::fake('public');
-        $author = Author::factory()->create();
-        $category = Category::factory()->create();
 
         $this->actingAs($this->admin)->post(route('admin.books.store'), [
             'title' => 'Nouveau livre',
+            'description' => '<h2>Pourquoi le lire</h2><p><strong>Indispensable</strong> et <span style="color: rgb(230, 0, 0); font-size: 22px">en couleur</span>.</p><script>alert(1)</script>',
             'language' => 'fr',
             'format' => 'pdf',
             'price' => 3000,
             'old_price' => 4000,
             'is_active' => '1',
-            'authors' => [$author->id],
-            'categories' => [$category->id],
             'cover' => UploadedFile::fake()->image('cover.jpg', 400, 600),
             'file' => UploadedFile::fake()->create('livre.pdf', 120, 'application/pdf'),
-            'sample' => UploadedFile::fake()->create('extrait.pdf', 20, 'application/pdf'),
         ])->assertRedirect(route('admin.books.index'));
 
         $book = Book::where('slug', 'nouveau-livre')->firstOrFail();
         $this->assertSame(4000, $book->old_price);
         Storage::disk('local')->assertExists($book->file_path);
-        Storage::disk('local')->assertExists($book->sample_path);
         Storage::disk('public')->assertExists($book->cover);
         Storage::disk('public')->assertMissing($book->file_path);
-        $this->assertTrue($book->authors->contains($author));
+        $this->assertStringContainsString('<strong>Indispensable</strong>', $book->description);
+        $this->assertStringContainsString('color: rgb(230, 0, 0); font-size: 22px', $book->description);
+        $this->assertStringNotContainsString('script', $book->description);
+
+        $this->get(route('books.show', $book))
+            ->assertSee('<h2>Pourquoi le lire</h2>', false)
+            ->assertDontSee('alert(1)', false);
+    }
+
+    public function test_book_form_no_longer_asks_for_removed_fields(): void
+    {
+        $this->actingAs($this->admin)->get(route('admin.books.create'))
+            ->assertOk()
+            ->assertSee('description-editor', false)
+            ->assertDontSee('name="authors[]"', false)
+            ->assertDontSee('name="categories[]"', false)
+            ->assertDontSee('name="summary"', false)
+            ->assertDontSee('name="table_of_contents"', false)
+            ->assertDontSee('name="publisher"', false)
+            ->assertDontSee('name="published_year"', false)
+            ->assertDontSee('name="isbn"', false)
+            ->assertDontSee('name="sample"', false);
+    }
+
+    public function test_editing_a_book_keeps_its_existing_authors_categories_and_sample(): void
+    {
+        $book = Book::factory()->create(['sample_path' => 'samples/x.pdf', 'isbn' => '978-1', 'summary' => 'Ancien résumé']);
+        $authors = $book->authors->pluck('id');
+        $categories = $book->categories->pluck('id');
+
+        $this->actingAs($this->admin)->get(route('admin.books.edit', $book))->assertSee('Ancien résumé');
+
+        $this->actingAs($this->admin)->put(route('admin.books.update', $book), [
+            'title' => 'Titre modifié', 'language' => 'fr', 'format' => 'pdf', 'price' => 1000,
+            'description' => '<p>Nouvelle description</p>',
+        ])->assertRedirect();
+
+        $book->refresh();
+        $this->assertSame('Titre modifié', $book->title);
+        $this->assertEquals($authors, $book->authors->pluck('id'));
+        $this->assertEquals($categories, $book->categories->pluck('id'));
+        $this->assertSame('samples/x.pdf', $book->sample_path);
+        $this->assertSame('978-1', $book->isbn);
+        $this->assertSame('<p>Nouvelle description</p>', $book->description);
+    }
+
+    public function test_editor_image_upload(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.editor.images'), ['image' => UploadedFile::fake()->image('photo.png', 600, 400)])
+            ->assertOk();
+
+        $this->assertStringContainsString('/storage/descriptions/', $response->json('url'));
+        $this->assertCount(1, Storage::disk('public')->files('descriptions'));
+
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.editor.images'), ['image' => UploadedFile::fake()->create('virus.php', 10, 'application/x-php')])
+            ->assertUnprocessable();
+
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.editor.images'), ['image' => UploadedFile::fake()->image('a.png')])
+            ->assertForbidden();
     }
 
     public function test_book_validation(): void
     {
         $this->actingAs($this->admin)
             ->post(route('admin.books.store'), ['title' => '', 'price' => -1, 'old_price' => 0, 'format' => 'docx'])
-            ->assertSessionHasErrors(['title', 'price', 'format', 'authors', 'categories', 'file']);
+            ->assertSessionHasErrors(['title', 'price', 'format', 'file']);
     }
 
     public function test_sold_book_is_deactivated_instead_of_deleted(): void

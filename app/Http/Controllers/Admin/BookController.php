@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BookRequest;
-use App\Models\Author;
 use App\Models\Book;
-use App\Models\Category;
+use App\Support\RichText;
 use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,7 +44,7 @@ class BookController extends Controller
 
     public function edit(Book $book): View
     {
-        return view('admin.books.form', $this->formData($book->load('authors', 'categories')));
+        return view('admin.books.form', $this->formData($book));
     }
 
     public function update(BookRequest $request, Book $book): RedirectResponse
@@ -76,7 +75,8 @@ class BookController extends Controller
 
     private function save(BookRequest $request, Book $book): void
     {
-        $data = $request->safe()->except(['authors', 'categories', 'cover', 'file', 'epub_file', 'sample', 'slug']);
+        $data = $request->safe()->except(['cover', 'file', 'epub_file', 'slug']);
+        $data['description'] = RichText::sanitize($request->input('description'));
         $data['slug'] = $request->filled('slug')
             ? $request->input('slug')
             : ($book->slug ?? Slug::unique(Book::class, $request->input('title')));
@@ -97,13 +97,8 @@ class BookController extends Controller
         if ($request->hasFile('epub_file')) {
             $data['epub_path'] = $this->replace($book->epub_path, $request->file('epub_file'), 'ebooks', $private);
         }
-        if ($request->hasFile('sample')) {
-            $data['sample_path'] = $this->replace($book->sample_path, $request->file('sample'), 'samples', $private);
-        }
-
+        // Auteurs, catégories, extrait… ne sont plus saisis ici : les valeurs existantes sont conservées.
         $book->fill($data)->save();
-        $book->authors()->sync($request->input('authors', []));
-        $book->categories()->sync($request->input('categories', []));
     }
 
     private function replace(?string $old, UploadedFile $file, string $dir, string $disk): string
@@ -122,8 +117,6 @@ class BookController extends Controller
     {
         return [
             'book' => $book,
-            'authors' => Author::orderBy('name')->get(['id', 'name']),
-            'categories' => Category::orderBy('name')->get(['id', 'name']),
         ];
     }
 }

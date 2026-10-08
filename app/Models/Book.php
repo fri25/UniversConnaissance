@@ -20,7 +20,7 @@ class Book extends Model
     public const NEW_DAYS = 30;
 
     protected $fillable = [
-        'title', 'slug', 'summary', 'table_of_contents', 'isbn', 'publisher', 'published_year',
+        'title', 'slug', 'summary', 'description', 'table_of_contents', 'isbn', 'publisher', 'published_year',
         'language', 'pages', 'format', 'price', 'old_price', 'cover', 'sample_path',
         'file_path', 'epub_path', 'chariow_product_id', 'chariow_product_url', 'file_size', 'is_active', 'is_featured',
     ];
@@ -197,6 +197,19 @@ class Book extends Model
         return $this->cover
             ? Storage::disk('public')->url($this->cover)
             : asset('images/cover-placeholder.svg');
+    }
+
+    /**
+     * Description en texte brut (balises meta, données structurées).
+     * Repli sur l'ancien résumé pour les livres créés avant l'éditeur riche.
+     */
+    public function plainDescription(int $limit = 300): string
+    {
+        $text = $this->description
+            ? html_entity_decode(strip_tags(str_replace(['</p>', '<br>', '</li>', '</h2>', '</h3>'], ' ', $this->description)), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            : (string) $this->summary;
+
+        return \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/u', ' ', $text)), $limit);
     }
 
     public function authorNames(): string

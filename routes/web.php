@@ -70,6 +70,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('books/import', [Admin\BookImportController::class, 'create'])->name('books.import');
     Route::post('books/import', [Admin\BookImportController::class, 'store'])->name('books.import.store');
     Route::resource('books', Admin\BookController::class)->except('show');
+    Route::post('editor/images', Admin\EditorImageController::class)
+        ->middleware('throttle:60,1')->name('editor.images');
     Route::resource('authors', Admin\AuthorController::class)->except('show');
     Route::resource('categories', Admin\CategoryController::class)->except('show');
 

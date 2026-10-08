@@ -3,6 +3,7 @@
 <head>
     @include('layouts.partials.head', ['title' => ($title ? $title.' · ' : '').'Administration'])
     <meta name="robots" content="noindex">
+    @stack('head')
 </head>
 <body class="bg-slate-50 font-sans dark:bg-ink" x-data="{ nav: false }">
     @php($links = [
@@ -67,5 +68,6 @@
             </div>
         </main>
     </div>
+    @stack('scripts')
 </body>
 </html>

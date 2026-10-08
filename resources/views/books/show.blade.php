@@ -5,7 +5,7 @@
         'name' => $book->title,
         'url' => route('books.show', $book),
         'image' => $book->coverUrl(),
-        'description' => \Illuminate\Support\Str::limit(strip_tags((string) $book->summary), 300),
+        'description' => $book->plainDescription(300),
         'author' => $book->authors->map(fn ($a) => ['@type' => 'Person', 'name' => $a->name])->all(),
         'publisher' => $book->publisher ? ['@type' => 'Organization', 'name' => $book->publisher] : null,
         'datePublished' => $book->published_year ? (string) $book->published_year : null,
@@ -30,7 +30,7 @@
     ], fn ($v) => $v !== null && $v !== []);
     $canReview = auth()->check() && ! $userReview && auth()->user()->can('create', [\App\Models\Review::class, $book]);
 @endphp
-<x-app-layout :title="$book->title.' — '.$book->authorNames()" :description="\Illuminate\Support\Str::limit(strip_tags((string) $book->summary), 155)">
+<x-app-layout :title="$book->authors->isNotEmpty() ? $book->title.' — '.$book->authorNames() : $book->title" :description="$book->plainDescription(155)">
     @push('pixel-events')
         ucTrack('ViewContent', @json(\App\Services\MetaPixel::bookData($book)));
     @endpush
@@ -87,12 +87,14 @@
                 </div>
 
                 <h1 class="mt-4 text-3xl font-extrabold leading-tight text-ink sm:text-4xl dark:text-white">{{ $book->title }}</h1>
-                <p class="mt-2 text-lg text-slate-600 dark:text-slate-300">
-                    par
-                    @foreach ($book->authors as $author)
-                        <a href="{{ route('books.index', ['author' => $author->slug]) }}" class="link">{{ $author->name }}</a>@if (! $loop->last), @endif
-                    @endforeach
-                </p>
+                @if ($book->authors->isNotEmpty())
+                    <p class="mt-2 text-lg text-slate-600 dark:text-slate-300">
+                        par
+                        @foreach ($book->authors as $author)
+                            <a href="{{ route('books.index', ['author' => $author->slug]) }}" class="link">{{ $author->name }}</a>@if (! $loop->last), @endif
+                        @endforeach
+                    </p>
+                @endif
                 <a href="#avis" class="mt-3 inline-block">
                     <x-rating-stars :value="$book->rating_avg" :count="$book->rating_count" size="h-5 w-5" />
                 </a>
@@ -159,10 +161,15 @@
                     </dl>
                 </section>
 
-                {{-- Résumé / auteur / sommaire --}}
+                {{-- Description / auteur / sommaire (onglets affichés seulement s'ils ont du contenu) --}}
+                @php($tabs = array_filter([
+                    'resume' => 'Description',
+                    'auteur' => $book->authors->isNotEmpty() ? 'À propos de l\'auteur' : null,
+                    'sommaire' => $book->table_of_contents ? 'Table des matières' : null,
+                ]))
                 <div class="mt-10" x-data="{ tab: 'resume' }">
                     <div class="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-ink-600" role="tablist">
-                        @foreach (['resume' => 'Résumé', 'auteur' => 'À propos de l\'auteur', 'sommaire' => 'Table des matières'] as $key => $label)
+                        @foreach ($tabs as $key => $label)
                             <button type="button" role="tab" @click="tab = '{{ $key }}'" :aria-selected="(tab === '{{ $key }}').toString()"
                                     :class="tab === '{{ $key }}' ? 'border-brand-600 text-brand-800 dark:text-brand-200' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
                                     class="-mb-px whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-semibold transition">
@@ -172,7 +179,12 @@
                     </div>
                     <div class="prose-content pt-5 text-slate-700 dark:text-slate-300">
                         <div x-show="tab === 'resume'" role="tabpanel">
-                            {!! nl2br(e($book->summary ?: 'Résumé à venir.')) !!}
+                            @if ($book->description)
+                                {{-- HTML nettoyé à l'enregistrement par App\Support\RichText --}}
+                                <div class="rich-content">{!! $book->description !!}</div>
+                            @else
+                                {!! nl2br(e($book->summary ?: 'Description à venir.')) !!}
+                            @endif
                         </div>
                         <div x-show="tab === 'auteur'" x-cloak role="tabpanel" class="space-y-6">
                             @foreach ($book->authors as $author)

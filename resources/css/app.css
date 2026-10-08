@@ -100,6 +100,60 @@
         @apply mb-4 leading-relaxed;
     }
 
+    /* Description saisie avec l'éditeur riche de l'admin. */
+    .rich-content {
+        @apply leading-relaxed text-slate-700 dark:text-slate-300;
+        overflow-wrap: anywhere;
+    }
+
+    .rich-content > * + * {
+        @apply mt-4;
+    }
+
+    .rich-content p {
+        @apply mb-0;
+    }
+
+    .rich-content h2 {
+        @apply mt-8 font-serif text-2xl font-bold text-ink dark:text-white;
+    }
+
+    .rich-content h3 {
+        @apply mt-6 font-serif text-xl font-bold text-ink dark:text-white;
+    }
+
+    .rich-content ul {
+        @apply list-disc space-y-1 pl-6;
+    }
+
+    .rich-content ol {
+        @apply list-decimal space-y-1 pl-6;
+    }
+
+    .rich-content a {
+        @apply link;
+    }
+
+    .rich-content img {
+        @apply my-2 h-auto max-w-full rounded-xl;
+    }
+
+    .rich-content blockquote {
+        @apply border-l-4 border-brand-400 pl-4 italic text-slate-600 dark:text-slate-400;
+    }
+
+    .rich-content pre {
+        @apply overflow-x-auto rounded-lg bg-slate-100 p-3 text-sm dark:bg-ink-900;
+    }
+
+    /* Classes de Quill conservées par le nettoyeur (contenus collés). */
+    .rich-content .ql-align-center { text-align: center; }
+    .rich-content .ql-align-right { text-align: right; }
+    .rich-content .ql-align-justify { text-align: justify; }
+    .rich-content .ql-size-small { font-size: .75em; }
+    .rich-content .ql-size-large { font-size: 1.5em; }
+    .rich-content .ql-size-huge { font-size: 2.5em; }
+
     .admin-table {
         @apply min-w-full divide-y divide-slate-200 text-sm dark:divide-ink-600;
     }
