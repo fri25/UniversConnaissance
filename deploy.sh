@@ -13,8 +13,12 @@ composer install --no-dev --optimize-autoloader --no-interaction
 
 # Vider les caches AVANT de toucher à la base : sinon artisan utiliserait une
 # configuration mémorisée (anciens identifiants) au lieu du .env actuel.
+# (Pas de cache:clear ici : il a besoin de la table « cache », absente sur une base neuve.)
 echo "→ Lecture du .env actuel"
-php artisan optimize:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan event:clear
 
 echo "→ Vérification de la connexion à la base de données"
 if ! php artisan db:show --no-interaction > /dev/null 2>&1; then
