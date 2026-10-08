@@ -230,7 +230,11 @@ class RichText
             return null;
         }
 
-        $path = 'descriptions/'.Str::random(40).'.'.($type === 'jpeg' ? 'jpg' : $type);
+        // Images collées : souvent des captures d'écran PNG très lourdes.
+        [$binary, $extension] = ImageOptimizer::encode($binary, ImageOptimizer::CONTENT)
+            ?? [$binary, $type === 'jpeg' ? 'jpg' : $type];
+
+        $path = 'descriptions/'.Str::random(40).'.'.$extension;
         Storage::disk('public')->put($path, $binary);
 
         return Storage::disk('public')->url($path);

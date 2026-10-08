@@ -198,6 +198,22 @@ Tout se règle dans l'admin, sans toucher au serveur : **Admin → Réglages**.
 
 ---
 
+## 14. Images légères et cache
+
+Les images téléversées (couvertures, images des descriptions, photos d'auteurs) sont automatiquement **redimensionnées et converties en WebP** : une couverture passe typiquement de 300–800 Ko à 30–60 Ko. Le fichier `public/.htaccess` demande aussi aux navigateurs de garder images, CSS et JS en cache un an.
+
+Pour optimiser les images **déjà en ligne** (à faire une fois après la mise à jour) :
+
+```bash
+cd ~/univers-connaissance
+php artisan images:optimize           # aperçu : liste les images et le gain, ne modifie rien
+php artisan images:optimize --force   # conversion réelle (liens mis à jour automatiquement)
+```
+
+La première ligne affichée indique le format utilisé (WebP, ou JPEG si le serveur ne gère pas le WebP).
+
+---
+
 ## En cas de problème
 
 | Symptôme | Piste |
@@ -211,4 +227,5 @@ Tout se règle dans l'admin, sans toucher au serveur : **Admin → Réglages**.
 | Modification du `.env` sans effet | `bash deploy.sh` (la configuration est mise en cache) |
 | Pixel Meta : aucun événement | Le bandeau cookies a-t-il été accepté ? Le pixel ne se charge qu'après accord. Vérifiez l'ID dans Admin → Réglages |
 | Pixel Meta : pas d'achats | Jeton API Conversions manquant ou invalide (voir `storage/logs/laravel.log`, lignes « Meta CAPI ») ; tâche planifiée inactive |
+| Images lentes à charger | `php artisan images:optimize --force` ; évitez les PNG pour les photos |
 | Disque plein | `composer clear-cache` ; supprimez les vieux logs dans `storage/logs` |

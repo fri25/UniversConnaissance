@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BookRequest;
 use App\Models\Book;
+use App\Support\ImageOptimizer;
 use App\Support\RichText;
 use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
@@ -88,7 +89,11 @@ class BookController extends Controller
         $private = config('ebooks.disk');
 
         if ($request->hasFile('cover')) {
-            $data['cover'] = $this->replace($book->cover, $request->file('cover'), 'covers', 'public');
+            if ($book->cover) {
+                Storage::disk('public')->delete($book->cover);
+            }
+            // Redimensionnée et compressée (WebP) : une couverture brute pèse souvent 10 à 20 fois trop.
+            $data['cover'] = ImageOptimizer::storeUpload($request->file('cover'), 'covers', ImageOptimizer::COVER);
         }
         if ($request->hasFile('file')) {
             $data['file_path'] = $this->replace($book->file_path, $request->file('file'), 'ebooks', $private);

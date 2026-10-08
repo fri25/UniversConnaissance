@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +19,7 @@ class EditorImageController extends Controller
             'image' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5120'],
         ], [], ['image' => 'image']);
 
-        $path = $request->file('image')->store('descriptions', 'public');
+        $path = ImageOptimizer::storeUpload($request->file('image'), 'descriptions', ImageOptimizer::CONTENT);
 
         return response()->json(['url' => Storage::disk('public')->url($path)]);
     }

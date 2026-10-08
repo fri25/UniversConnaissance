@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AuthorRequest;
 use App\Models\Author;
+use App\Support\ImageOptimizer;
 use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -66,7 +67,7 @@ class AuthorController extends Controller
             if ($author->photo) {
                 Storage::disk('public')->delete($author->photo);
             }
-            $data['photo'] = $request->file('photo')->store('authors', 'public');
+            $data['photo'] = ImageOptimizer::storeUpload($request->file('photo'), 'authors', ImageOptimizer::AVATAR);
         }
 
         $author->fill($data)->save();
