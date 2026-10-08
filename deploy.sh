@@ -22,7 +22,7 @@ if ! php artisan db:show --no-interaction > /dev/null 2>&1; then
     echo "  Vérifiez DB_HOST, DB_DATABASE, DB_USERNAME et DB_PASSWORD"
     echo "  (mot de passe avec # \$ ou espace : entourez-le de guillemets simples)."
     echo "  Détail de l'erreur :"
-    php artisan db:show --no-interaction 2>&1 | grep -m1 -E "SQLSTATE|Exception" || true
+    php artisan db:show --no-interaction 2>&1 | grep -m1 "SQLSTATE" | sed 's/^ *//' || true
     exit 1
 fi
 
