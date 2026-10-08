@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\BookController;
-use App\Http\Controllers\BuyController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\FakePaymentController;
 use App\Http\Controllers\HomeController;
@@ -28,14 +28,19 @@ Route::view('/cgv', 'pages.terms')->name('pages.terms');
 Route::view('/confidentialite', 'pages.privacy')->name('pages.privacy');
 
 // --- Achat sans connexion -----------------------------------------------------
-// « Acheter » redirige vers la page de paiement du prestataire (Chariow).
-Route::get('/acheter/{book:slug}', BuyController::class)->middleware('throttle:checkout')->name('books.buy');
-Route::get('/merci', ThankYouController::class)->name('checkout.thanks');
+// Formulaire (nom, email, téléphone) puis paiement créé via l'API Chariow.
+Route::get('/acheter/{book:slug}', [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/acheter/{book:slug}', [CheckoutController::class, 'store'])
+    ->middleware('throttle:checkout')->name('checkout.store');
+// Retour après paiement : lien signé transmis au prestataire.
+Route::get('/merci/{order}', ThankYouController::class)->middleware('signed')->name('checkout.return');
 
-// Page de paiement simulée (local / démo uniquement).
-Route::get('/paiement/simulation/{book:slug}', [FakePaymentController::class, 'show'])->name('payment.fake.show');
-Route::post('/paiement/simulation/{book:slug}', [FakePaymentController::class, 'complete'])
-    ->middleware('throttle:checkout')->name('payment.fake.complete');
+// Page de paiement simulée (local / démo uniquement), par lien signé.
+Route::middleware('signed')->group(function () {
+    Route::get('/paiement/simulation/{order}', [FakePaymentController::class, 'show'])->name('payment.fake.show');
+    Route::post('/paiement/simulation/{order}', [FakePaymentController::class, 'complete'])
+        ->middleware('throttle:checkout')->name('payment.fake.complete');
+});
 
 // Lien de téléchargement signé envoyé par email : utilisable sans connexion.
 Route::get('/telecharger/{download:token}/{format}', DownloadController::class)

@@ -22,7 +22,7 @@ class Book extends Model
     protected $fillable = [
         'title', 'slug', 'summary', 'description', 'table_of_contents', 'isbn', 'publisher', 'published_year',
         'language', 'pages', 'format', 'price', 'old_price', 'cover', 'sample_path',
-        'file_path', 'epub_path', 'chariow_product_id', 'chariow_product_url', 'file_size', 'is_active', 'is_featured',
+        'file_path', 'epub_path', 'chariow_product_id', 'file_size', 'is_active', 'is_featured',
     ];
 
     protected $hidden = ['file_path', 'epub_path'];
@@ -141,7 +141,7 @@ class Book extends Model
     public function isPurchasable(): bool
     {
         return $this->is_active
-            && app(\App\Payments\PaymentManager::class)->gateway()->checkoutUrl($this) !== null;
+            && app(\App\Payments\PaymentManager::class)->gateway()->canSell($this);
     }
 
     public function isOnPromo(): bool

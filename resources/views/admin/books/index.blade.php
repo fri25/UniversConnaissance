@@ -47,8 +47,8 @@
                                 <span class="badge bg-slate-200 text-slate-700">Inactif</span>
                             @endif
                             @if ($book->is_featured)<span class="badge-brand">À la une</span>@endif
-                            @if (config('payment.default') === 'chariow' && (! $book->chariow_product_id || ! $book->chariow_product_url))
-                                <span class="badge bg-amber-100 text-amber-900" title="Achat indisponible tant que l'ID et le lien du produit Chariow ne sont pas renseignés">Non lié à Chariow</span>
+                            @if (config('payment.default') === 'chariow' && ! $book->chariow_product_id)
+                                <span class="badge bg-amber-100 text-amber-900" title="Achat indisponible tant que l'ID du produit Chariow n'est pas renseigné">Non lié à Chariow</span>
                             @endif
                         </td>
                         <td class="whitespace-nowrap text-right">

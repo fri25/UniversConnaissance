@@ -3,37 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Payments\Exceptions\PaymentException;
+use App\Payments\PaymentManager;
+use App\Payments\PaymentStatus;
 use App\Services\DownloadService;
-use Illuminate\Http\Request;
+use App\Services\OrderPaymentService;
 use Illuminate\View\View;
 
 /**
- * Page de retour après paiement. Avec ?sale=<référence de vente> et si la
- * vente vient d'être confirmée, on propose directement le téléchargement ;
- * sinon on invite le client à surveiller sa boîte mail.
+ * Retour du client après paiement. Le lien est signé (le client qui a payé
+ * est le seul à le recevoir) : on peut donc proposer directement le
+ * téléchargement, sans connexion. Le statut est revérifié auprès du
+ * prestataire si le webhook n'est pas encore arrivé.
  */
 class ThankYouController extends Controller
 {
-    /**
-     * Durée pendant laquelle la page de remerciement donne accès au fichier.
-     */
-    private const FRESH_MINUTES = 120;
-
-    public function __invoke(Request $request, DownloadService $downloads): View
+    public function __invoke(Order $order, PaymentManager $payments, OrderPaymentService $service, DownloadService $downloads): View
     {
-        $order = null;
-        $links = [];
-
-        $sale = $request->query('sale');
-        if (is_string($sale) && $sale !== '' && strlen($sale) <= 100) {
-            $order = Order::with('book', 'user', 'download')
-                ->where('payment_reference', $sale)
-                ->where('status', Order::STATUS_PAID)
-                ->where('paid_at', '>=', now()->subMinutes(self::FRESH_MINUTES))
-                ->first();
+        if ($order->isPending() && $order->payment_reference && $order->gateway !== 'fake') {
+            try {
+                match ($payments->gateway($order->gateway)->fetchStatus($order->payment_reference)) {
+                    PaymentStatus::Paid => $service->markAsPaid($order, $order->payment_reference),
+                    PaymentStatus::Failed => $service->markAsFailed($order),
+                    default => null,
+                };
+                $order->refresh();
+            } catch (PaymentException $e) {
+                report($e);
+            }
         }
 
-        if ($order?->download && ! $order->download->isExhausted()) {
+        $order->load('book', 'user', 'download');
+        $links = [];
+
+        if ($order->isPaid() && $order->download && ! $order->download->isExhausted()) {
             $download = $downloads->ensureFresh($order->download);
             foreach ($order->book->availableFormats() as $format) {
                 $links[strtoupper($format)] = $downloads->signedUrl($download, $format);
@@ -43,7 +46,7 @@ class ThankYouController extends Controller
         return view('checkout.thanks', [
             'order' => $order,
             'links' => $links,
-            'maskedEmail' => $order ? $this->mask($order->user->email) : null,
+            'maskedEmail' => $this->mask($order->user->email),
         ]);
     }
 

@@ -9,7 +9,7 @@
     </section>
     <section>
         <h2>3. Commande et paiement</h2>
-        <p>Aucun compte n'est nécessaire pour commander : l'acheteur saisit ses coordonnées sur la page de paiement, et un compte est créé automatiquement avec son email pour lui donner accès à ses achats. Le paiement s'effectue en ligne via Chariow (Mobile Money, carte bancaire). La commande est considérée comme ferme dès la confirmation du paiement par le prestataire.</p>
+        <p>Aucun compte n'est nécessaire pour commander : l'acheteur indique ses coordonnées (nom, email, téléphone) avant le paiement, et un compte est créé automatiquement avec son email pour lui donner accès à ses achats. Le paiement s'effectue en ligne via Chariow (Mobile Money, carte bancaire). La commande est considérée comme ferme dès la confirmation du paiement par le prestataire.</p>
     </section>
     <section>
         <h2>4. Livraison</h2>

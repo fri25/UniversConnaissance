@@ -36,7 +36,6 @@ class PaymentWebhookTest extends TestCase
         $this->book = Book::factory()->create([
             'price' => 2500,
             'chariow_product_id' => 'prd_livre',
-            'chariow_product_url' => 'https://boutique.mychariow.com/p/livre',
         ]);
     }
 
@@ -91,6 +90,33 @@ class PaymentWebhookTest extends TestCase
         $this->assertTrue($user->is_guest);
 
         Mail::assertQueued(EbookDelivered::class, fn ($mail) => $mail->hasTo('awa@example.com'));
+    }
+
+    public function test_pulse_confirms_the_pending_order_created_by_the_checkout_api(): void
+    {
+        $order = Order::factory()->for($this->book)->create(['gateway' => 'chariow', 'payment_reference' => 'sal_api', 'amount' => 2500]);
+        $payload = $this->sale('sal_api');
+        $payload['sale']['custom_metadata'] = ['order_reference' => $order->reference];
+
+        $this->pulse($payload)->assertOk()->assertJson(['message' => 'Commande mise à jour.']);
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertTrue($order->fresh()->isPaid());
+        $this->assertNotNull($order->fresh()->download);
+        Mail::assertQueued(EbookDelivered::class, fn ($mail) => $mail->hasTo($order->user->email));
+    }
+
+    public function test_pulse_finds_order_by_metadata_when_sale_id_was_not_saved(): void
+    {
+        $order = Order::factory()->for($this->book)->create(['gateway' => 'chariow', 'payment_reference' => null, 'amount' => 2500]);
+        $payload = $this->sale('sal_nouveau');
+        $payload['sale']['custom_metadata'] = ['order_reference' => $order->reference];
+
+        $this->pulse($payload)->assertOk();
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertSame('sal_nouveau', $order->fresh()->payment_reference);
+        $this->assertTrue($order->fresh()->isPaid());
     }
 
     public function test_delivery_email_offers_password_creation_to_new_customers(): void

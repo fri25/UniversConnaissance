@@ -3,15 +3,19 @@
 namespace App\Payments\Gateways;
 
 use App\Models\Book;
+use App\Models\Order;
 use App\Payments\Contracts\PaymentGateway;
 use App\Payments\Exceptions\InvalidWebhookSignature;
+use App\Payments\PaymentSession;
 use App\Payments\PaymentStatus;
 use App\Payments\WebhookEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 /**
  * Prestataire simulé pour le développement local, la démo et les tests.
- * Sa page imite celle de Chariow (coordonnées + paiement). Interdit en production.
+ * Interdit en production (voir PaymentManager).
  */
 class FakeGateway implements PaymentGateway
 {
@@ -27,9 +31,24 @@ class FakeGateway implements PaymentGateway
         return 'fake';
     }
 
-    public function checkoutUrl(Book $book): ?string
+    public function canSell(Book $book): bool
     {
-        return route('payment.fake.show', $book);
+        return true;
+    }
+
+    public function createPayment(Order $order, array $customer): PaymentSession
+    {
+        // Lien signé : sans compte, seul celui qui vient de remplir le formulaire peut « payer ».
+        return new PaymentSession(
+            'fake_'.Str::lower(Str::random(16)),
+            URL::temporarySignedRoute('payment.fake.show', now()->addHour(), ['order' => $order->reference]),
+        );
+    }
+
+    public function fetchStatus(string $paymentReference): PaymentStatus
+    {
+        // La simulation confirme la commande directement : pas d'état distant.
+        return PaymentStatus::Pending;
     }
 
     public function bookFor(string $productReference): ?Book

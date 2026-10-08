@@ -19,6 +19,20 @@ class MetaPixelTest extends TestCase
 
     private const PIXEL = '123456789012345';
 
+    /**
+     * Achat simulé complet, sans compte : formulaire puis paiement confirmé.
+     */
+    private function buy(Book $book, string $email = 'x@example.com', string $name = 'Client Test'): Order
+    {
+        $this->post(route('checkout.store', $book), [
+            'name' => $name, 'email' => $email, 'phone_country' => 'BJ', 'phone_number' => '+229 01 97 00 00 00', 'accept_terms' => '1',
+        ]);
+        $order = Order::sole();
+        $this->post(\Illuminate\Support\Facades\URL::temporarySignedRoute('payment.fake.complete', now()->addHour(), ['order' => $order->reference]), ['outcome' => 'success']);
+
+        return $order->fresh();
+    }
+
     private function admin(): User
     {
         $admin = User::factory()->create();
@@ -100,10 +114,7 @@ class MetaPixelTest extends TestCase
         Setting::put('meta_capi_token', 'EAABsecret');
         $book = Book::factory()->create(['price' => 4500]);
 
-        $this->post(route('payment.fake.complete', $book), [
-            'name' => 'Awa Diallo', 'email' => 'Awa@Example.com', 'phone' => '+229 01 97 00 00 00', 'outcome' => 'success',
-        ]);
-        $order = Order::sole();
+        $order = $this->buy($book, 'Awa@Example.com', 'Awa Diallo');
 
         Http::assertSent(function ($request) use ($order, $book) {
             $event = $request['data'][0];
@@ -127,7 +138,7 @@ class MetaPixelTest extends TestCase
         Setting::put('meta_pixel_id', self::PIXEL);
         $book = Book::factory()->create();
 
-        $this->post(route('payment.fake.complete', $book), ['name' => 'X', 'email' => 'x@example.com', 'outcome' => 'success']);
+        $this->buy($book);
 
         $this->assertSame(1, Order::count());
         Http::assertNothingSent();
@@ -141,8 +152,7 @@ class MetaPixelTest extends TestCase
         Setting::put('meta_capi_token', 'mauvais');
         $book = Book::factory()->create();
 
-        $this->post(route('payment.fake.complete', $book), ['name' => 'X', 'email' => 'x@example.com', 'outcome' => 'success'])
-            ->assertRedirect();
+        $this->buy($book);
 
         $this->assertTrue(Order::sole()->isPaid());
     }
@@ -152,10 +162,9 @@ class MetaPixelTest extends TestCase
         Mail::fake();
         Setting::put('meta_pixel_id', self::PIXEL);
         $book = Book::factory()->create();
-        $this->post(route('payment.fake.complete', $book), ['name' => 'X', 'email' => 'x@example.com', 'outcome' => 'success']);
-        $order = Order::sole();
+        $order = $this->buy($book);
 
-        $this->get(route('checkout.thanks', ['sale' => $order->payment_reference]))
+        $this->get($order->returnUrl())
             ->assertSee("ucTrack('Purchase'", false)
             ->assertSee('purchase-'.$order->reference, false);
     }

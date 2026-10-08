@@ -114,7 +114,7 @@
                                 </a>
                             @endforeach
                         @elseif ($book->isPurchasable())
-                            <a href="{{ route('books.buy', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary flex-1 py-3 text-base">Acheter maintenant</a>
+                            <a href="{{ route('checkout.show', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary flex-1 py-3 text-base">Acheter maintenant</a>
                         @else
                             <span class="btn-outline flex-1 cursor-not-allowed py-3 text-base opacity-70" aria-disabled="true">Bientôt disponible</span>
                         @endif
@@ -316,7 +316,7 @@
             @if ($purchase)
                 <a href="{{ route('dashboard') }}" class="btn-solid">Télécharger</a>
             @elseif ($book->isPurchasable())
-                <a href="{{ route('books.buy', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary">Acheter maintenant</a>
+                <a href="{{ route('checkout.show', $book) }}" data-pixel-checkout="{{ json_encode(\App\Services\MetaPixel::bookData($book)) }}" class="btn-primary">Acheter maintenant</a>
             @else
                 <span class="btn-outline opacity-70" aria-disabled="true">Bientôt disponible</span>
             @endif

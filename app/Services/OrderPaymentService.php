@@ -188,34 +188,55 @@ class OrderPaymentService
     }
 
     /**
-     * Compte existant (même email) ou nouveau compte « invité » : le client
-     * choisira son mot de passe via le lien reçu dans l'email de livraison.
+     * Client d'une vente reçue par webhook sans commande préalable.
      */
     private function customerFor(WebhookEvent $event, string $email): User
     {
+        return $this->customer($email, $event->customerName(), $event->customer['phone'] ?? null, $event->customer['country'] ?? null);
+    }
+
+    /**
+     * Compte existant (même email) ou nouveau compte « invité » : le client
+     * choisira son mot de passe via le lien reçu dans l'email de livraison.
+     * Les coordonnées d'un compte existant ne sont jamais écrasées.
+     */
+    public function customer(string $email, string $name, ?string $phone = null, ?string $country = null): User
+    {
+        $email = mb_strtolower(trim($email));
+
         $existing = User::where('email', $email)->first();
         if ($existing) {
+            // Complète seulement un téléphone manquant.
+            if (! $existing->phone && $phone) {
+                $existing->forceFill(['phone' => $phone, 'phone_country' => $this->countryCode($country)])->save();
+            }
+
             return $existing;
         }
 
-        $country = strtoupper((string) ($event->customer['country'] ?? ''));
-
         try {
             $user = User::create([
-                'name' => Str::limit($event->customerName(), 255, ''),
+                'name' => Str::limit(trim($name) ?: (string) strstr($email, '@', true), 255, ''),
                 'email' => $email,
-                'phone' => $event->customer['phone'] ?? null,
-                'phone_country' => strlen($country) === 2 ? $country : null,
+                'phone' => $phone,
+                'phone_country' => $this->countryCode($country),
                 'password' => Hash::make(Str::random(40)),
             ]);
         } catch (UniqueConstraintViolationException) {
-            // Créé entre-temps par un webhook concurrent.
+            // Créé entre-temps par une requête concurrente.
             return User::where('email', $email)->firstOrFail();
         }
 
         $user->forceFill(['is_guest' => true])->save();
 
         return $user;
+    }
+
+    private function countryCode(?string $country): ?string
+    {
+        $country = strtoupper(trim((string) $country));
+
+        return strlen($country) === 2 ? $country : null;
     }
 
     private function findOrder(WebhookEvent $event): ?Order

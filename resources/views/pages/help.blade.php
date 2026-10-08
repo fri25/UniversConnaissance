@@ -12,7 +12,7 @@
 
     <div class="space-y-3">
         @foreach ([
-            'Comment acheter un e-book ?' => 'Cliquez sur « Acheter » : vous êtes redirigé directement vers la page de paiement sécurisée Chariow (Mobile Money ou carte bancaire), sans avoir à créer de compte. Indiquez-y votre nom, votre email et votre téléphone.',
+            'Comment acheter un e-book ?' => 'Cliquez sur « Acheter », indiquez votre nom, votre email et votre numéro Mobile Money (aucun compte à créer), puis payez sur la page sécurisée Chariow (Mobile Money ou carte bancaire).',
             'Quand vais-je recevoir mon e-book ?' => 'Immédiatement après la confirmation du paiement : un email contenant votre lien de téléchargement est envoyé à l\'adresse saisie au paiement. Un compte est créé avec cet email : choisissez votre mot de passe (lien dans l\'email) pour retrouver vos e-books dans « Mes achats ».',
             'Quels moyens de paiement acceptez-vous ?' => 'MTN Mobile Money, Moov Money et les principales cartes bancaires, via notre partenaire de paiement Chariow. Nous ne stockons jamais vos données de paiement.',
             'Combien de fois puis-je télécharger mon e-book ?' => 'Chaque achat inclut '.config('ebooks.max_downloads').' téléchargements. Les liens envoyés par email expirent après '.config('ebooks.link_ttl_hours').' heures, mais vous pouvez en générer un nouveau à tout moment depuis « Mes achats ».',

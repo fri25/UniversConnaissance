@@ -22,7 +22,7 @@ class BookImportController extends Controller
 {
     public const COLUMNS = [
         'title', 'authors', 'categories', 'price', 'old_price', 'format', 'language',
-        'pages', 'publisher', 'published_year', 'isbn', 'summary', 'chariow_product_id', 'chariow_product_url',
+        'pages', 'publisher', 'published_year', 'isbn', 'summary', 'chariow_product_id',
     ];
 
     public function create(): View
@@ -71,7 +71,6 @@ class BookImportController extends Controller
                 'published_year' => ['nullable', 'integer'],
                 'isbn' => ['nullable', 'string', 'max:20'],
                 'chariow_product_id' => ['nullable', 'string', 'max:100', 'alpha_dash'],
-                'chariow_product_url' => ['nullable', 'url:https', 'max:500'],
             ]);
 
             if ($validator->fails()) {
@@ -94,7 +93,6 @@ class BookImportController extends Controller
                     'price' => (int) $data['price'],
                     'old_price' => isset($data['old_price']) && (int) $data['old_price'] > (int) $data['price'] ? (int) $data['old_price'] : null,
                     'chariow_product_id' => $data['chariow_product_id'] ?? null,
-                    'chariow_product_url' => $data['chariow_product_url'] ?? null,
                     'is_active' => false,
                 ]);
 

@@ -44,7 +44,6 @@ class BookRequest extends FormRequest
             'price' => ['required', 'integer', 'min:0', 'max:10000000'],
             'old_price' => ['nullable', 'integer', 'gt:price'],
             'chariow_product_id' => ['nullable', 'string', 'max:100', 'alpha_dash'],
-            'chariow_product_url' => ['nullable', 'url:https', 'max:500'],
             'is_active' => ['boolean'],
             'is_featured' => ['boolean'],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
@@ -84,7 +83,6 @@ class BookRequest extends FormRequest
             'epub_file' => 'fichier EPUB',
             'sample' => 'extrait',
             'chariow_product_id' => 'produit Chariow',
-            'chariow_product_url' => 'lien de paiement Chariow',
         ];
     }
 }

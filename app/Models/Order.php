@@ -73,9 +73,23 @@ class Order extends Model
         return $query->where('status', self::STATUS_PAID);
     }
 
+    /**
+     * Page de retour après paiement : lien signé et temporaire (seul le client
+     * qui vient de payer l'obtient), sans connexion nécessaire.
+     */
+    public function returnUrl(): string
+    {
+        return \Illuminate\Support\Facades\URL::temporarySignedRoute('checkout.return', now()->addDays(2), ['order' => $this->reference]);
+    }
+
     public function isPaid(): bool
     {
         return $this->status === self::STATUS_PAID;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->status === self::STATUS_FAILED;
     }
 
     public function isPending(): bool
