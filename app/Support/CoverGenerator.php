@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Génère des couvertures SVG (ratio 2:3) aux couleurs de la marque.
+ * Génère des couvertures SVG carrées aux couleurs de la marque.
  */
 class CoverGenerator
 {
@@ -23,8 +23,8 @@ class CoverGenerator
         [$top, $bottom, $accent] = self::THEMES[$theme] ?? self::THEMES['litterature'];
 
         $lines = $this->wrap($title, mb_strlen($title) > 40 ? 16 : 13);
-        $fontSize = count($lines) > 3 ? 34 : 40;
-        $startY = 250 - (count($lines) - 1) * $fontSize * 0.6;
+        $fontSize = count($lines) > 3 ? 28 : 34;
+        $startY = 175 - (count($lines) - 1) * $fontSize * 0.6;
 
         $titleSvg = '';
         foreach ($lines as $i => $line) {
@@ -40,15 +40,15 @@ class CoverGenerator
         mt_srand(crc32($title) + $seed);
         $rotation = mt_rand(-35, 35);
         $cx = mt_rand(250, 360);
-        $cy = mt_rand(60, 160);
+        $cy = mt_rand(50, 120);
         $stars = '';
         for ($i = 0; $i < 18; $i++) {
-            $stars .= '<circle cx="'.mt_rand(10, 390).'" cy="'.mt_rand(10, 590).'" r="'.(mt_rand(5, 18) / 10).'" fill="#FFFFFF" fill-opacity="'.(mt_rand(15, 60) / 100).'"/>';
+            $stars .= '<circle cx="'.mt_rand(10, 390).'" cy="'.mt_rand(10, 390).'" r="'.(mt_rand(5, 18) / 10).'" fill="#FFFFFF" fill-opacity="'.(mt_rand(15, 60) / 100).'"/>';
         }
         mt_srand();
 
         return <<<SVG
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
       <stop offset="0" stop-color="{$top}"/>
@@ -60,20 +60,20 @@ class CoverGenerator
     </radialGradient>
     <filter id="ts" x="-10%" y="-30%" width="120%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#0B1F2A" flood-opacity="0.45"/></filter>
   </defs>
-  <rect width="400" height="600" fill="url(#bg)"/>
-  <rect width="400" height="600" fill="url(#glow)"/>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect width="400" height="400" fill="url(#glow)"/>
   {$stars}
   <g transform="rotate({$rotation} {$cx} {$cy})" fill="none" stroke="{$accent}" stroke-opacity="0.5">
     <ellipse cx="{$cx}" cy="{$cy}" rx="150" ry="42" stroke-width="1.4"/>
     <ellipse cx="{$cx}" cy="{$cy}" rx="105" ry="28" stroke-width="1"/>
   </g>
   <circle cx="{$cx}" cy="{$cy}" r="24" fill="{$accent}" fill-opacity="0.9"/>
-  <rect x="24" y="24" width="352" height="552" rx="6" fill="none" stroke="#FFFFFF" stroke-opacity="0.25"/>
-  <text x="200" y="70" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="{$catSize}" letter-spacing="{$catSpacing}" fill="{$accent}">{$this->e(mb_strtoupper($category))}</text>
+  <rect x="20" y="20" width="360" height="360" rx="6" fill="none" stroke="#FFFFFF" stroke-opacity="0.25"/>
+  <text x="200" y="58" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="{$catSize}" letter-spacing="{$catSpacing}" fill="{$accent}">{$this->e(mb_strtoupper($category))}</text>
   {$titleSvg}
-  <rect x="170" y="430" width="60" height="3" rx="1.5" fill="{$accent}"/>
-  <text x="200" y="475" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" fill="#FFFFFF" filter="url(#ts)">{$this->e($author)}</text>
-  <text x="200" y="548" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" letter-spacing="3" fill="#FFFFFF" fill-opacity="0.6">UNIVERS CONNAISSANCE</text>
+  <rect x="170" y="285" width="60" height="3" rx="1.5" fill="{$accent}"/>
+  <text x="200" y="322" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="17" fill="#FFFFFF" filter="url(#ts)">{$this->e($author)}</text>
+  <text x="200" y="362" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" letter-spacing="3" fill="#FFFFFF" fill-opacity="0.6">UNIVERS CONNAISSANCE</text>
 </svg>
 SVG;
     }

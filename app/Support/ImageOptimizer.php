@@ -14,8 +14,8 @@ use Illuminate\Support\Str;
  */
 class ImageOptimizer
 {
-    /** Couvertures : affichées en ~250 px de large, ×2 pour les écrans haute définition. */
-    public const COVER = [600, 900];
+    /** Couvertures : format carré (recadrées au centre), nettes sur les écrans haute définition. */
+    public const COVER = [900, 900];
 
     /** Images des descriptions. */
     public const CONTENT = [1600, 1600];
@@ -36,9 +36,9 @@ class ImageOptimizer
      * @param  array{0: int, 1: int}  $box
      * @return string chemin relatif sur le disque
      */
-    public static function storeUpload(UploadedFile $file, string $directory, array $box, string $disk = 'public'): string
+    public static function storeUpload(UploadedFile $file, string $directory, array $box, bool $cropSquare = false, string $disk = 'public'): string
     {
-        $optimized = self::encode((string) file_get_contents($file->getRealPath()), $box);
+        $optimized = self::encode((string) file_get_contents($file->getRealPath()), $box, $cropSquare);
 
         if ($optimized === null) {
             // Format non pris en charge (GIF animé, SVG…) : fichier d'origine.
@@ -56,9 +56,10 @@ class ImageOptimizer
      * Optimise une image binaire (ex. image collée en base64).
      *
      * @param  array{0: int, 1: int}  $box
+     * @param  bool  $cropSquare  recadrer au centre en carré avant redimensionnement
      * @return array{0: string, 1: string}|null [contenu, extension] ou null si non optimisable
      */
-    public static function encode(string $binary, array $box, ?int $originalSize = null): ?array
+    public static function encode(string $binary, array $box, bool $cropSquare = false): ?array
     {
         $info = @getimagesizefromstring($binary);
         if ($info === false || ! in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF], true)) {
@@ -77,6 +78,11 @@ class ImageOptimizer
 
         if ($info[2] === IMAGETYPE_JPEG) {
             $image = self::applyExifOrientation($image, $binary);
+        }
+
+        $needsCrop = $cropSquare && $info[0] !== $info[1];
+        if ($needsCrop) {
+            $image = self::cropSquare($image);
         }
 
         $image = self::fit($image, $box[0], $box[1]);
@@ -99,8 +105,7 @@ class ImageOptimizer
         imagedestroy($image);
 
         // Garde-fou : ne jamais produire plus lourd qu'avant sans réduction de taille.
-        $before = $originalSize ?? strlen($binary);
-        if ($out === '' || (strlen($out) >= $before && $info[0] <= $box[0] && $info[1] <= $box[1])) {
+        if ($out === '' || (! $needsCrop && strlen($out) >= strlen($binary) && $info[0] <= $box[0] && $info[1] <= $box[1])) {
             return null;
         }
 
@@ -128,6 +133,21 @@ class ImageOptimizer
         imagedestroy($image);
 
         return $resized;
+    }
+
+    private static function cropSquare(GdImage $image): GdImage
+    {
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $side = min($width, $height);
+
+        $square = imagecreatetruecolor($side, $side);
+        imagealphablending($square, false);
+        imagesavealpha($square, true);
+        imagecopy($square, $image, 0, 0, (int) (($width - $side) / 2), (int) (($height - $side) / 2), $side, $side);
+        imagedestroy($image);
+
+        return $square;
     }
 
     private static function flattenOnWhite(GdImage $image): GdImage

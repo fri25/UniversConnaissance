@@ -108,8 +108,9 @@
 
             <div class="card space-y-4 p-5">
                 <div>
-                    <label for="cover" class="label">Couverture (JPG/PNG/WebP, ratio 2:3)</label>
-                    @if ($book->cover)<img src="{{ $book->coverUrl() }}" alt="" class="mb-2 h-32 rounded">@endif
+                    <label for="cover" class="label">Couverture (JPG/PNG/WebP, format carré)</label>
+                    @if ($book->cover)<img src="{{ $book->coverUrl() }}" alt="" class="mb-2 aspect-square h-32 rounded object-cover">@endif
+                    <p class="mb-2 text-xs text-slate-500">Une image non carrée est recadrée automatiquement au centre (900 × 900 px).</p>
                     <input id="cover" type="file" name="cover" accept="image/*" class="block w-full text-sm">
                     <x-input-error :messages="$errors->get('cover')" class="mt-1" />
                 </div>

@@ -36,7 +36,7 @@ class OptimizeImages extends Command
 
         // 1. Couvertures et photos d'auteurs : nouveau fichier + mise à jour de la base.
         foreach (Book::whereNotNull('cover')->get() as $book) {
-            $book->cover = $this->convert($book->cover, ImageOptimizer::COVER, $force, $book->title) ?? $book->cover;
+            $book->cover = $this->convert($book->cover, ImageOptimizer::COVER, $force, $book->title, cropSquare: true) ?? $book->cover;
             if ($force && $book->isDirty('cover')) {
                 $book->saveQuietly();
             }
@@ -81,7 +81,7 @@ class OptimizeImages extends Command
      * @param  array{0: int, 1: int}  $box
      * @return string|null nouveau chemin (ou chemin prévu en aperçu), null si rien à faire
      */
-    private function convert(string $path, array $box, bool $force, string $label): ?string
+    private function convert(string $path, array $box, bool $force, string $label, bool $cropSquare = false): ?string
     {
         $disk = Storage::disk('public');
 
@@ -94,14 +94,15 @@ class OptimizeImages extends Command
         // Déjà au format et aux dimensions cibles : ne pas recompresser (perte de qualité à chaque passage).
         $target = ImageOptimizer::supportsWebp() ? 'webp' : 'jpg';
         $size = @getimagesizefromstring($original);
-        if ($size && strtolower(pathinfo($path, PATHINFO_EXTENSION)) === $target && $size[0] <= $box[0] && $size[1] <= $box[1]) {
+        if ($size && strtolower(pathinfo($path, PATHINFO_EXTENSION)) === $target && $size[0] <= $box[0] && $size[1] <= $box[1] && (! $cropSquare || $size[0] === $size[1])) {
             return null;
         }
 
-        $result = ImageOptimizer::encode($original, $box);
+        $result = ImageOptimizer::encode($original, $box, $cropSquare);
+        $mustCrop = $cropSquare && $size && $size[0] !== $size[1];
 
-        // Gain négligeable : on laisse l'image telle quelle.
-        if ($result === null || strlen($result[0]) > strlen($original) * 0.9) {
+        // Gain négligeable (et pas de recadrage à faire) : on laisse l'image telle quelle.
+        if ($result === null || (! $mustCrop && strlen($result[0]) > strlen($original) * 0.9)) {
             return null;
         }
 

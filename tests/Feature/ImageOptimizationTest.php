@@ -65,8 +65,29 @@ class ImageOptimizationTest extends TestCase
 
         $stored = Storage::disk('public')->get($path);
         [$width, $height] = getimagesizefromstring($stored);
-        $this->assertSame([600, 900], [$width, $height]);
-        $this->assertLessThan(strlen($png) / 5, strlen($stored), 'Au moins 5 fois plus léger');
+        $this->assertSame([900, 900], [$width, $height], "Couverture recadrée en carré");
+        $this->assertLessThan(strlen($png) / 4, strlen($stored), 'Au moins 4 fois plus léger (image de test bruitée, pire cas)');
+    }
+
+    public function test_square_crop_keeps_the_center_of_the_image(): void
+    {
+        // Image paysage : bandes rouges à gauche/droite, centre bleu.
+        $img = imagecreatetruecolor(1200, 600);
+        imagefill($img, 0, 0, imagecolorallocate($img, 255, 0, 0));
+        imagefilledrectangle($img, 300, 0, 899, 599, imagecolorallocate($img, 0, 0, 255));
+        ob_start();
+        imagepng($img);
+        $png = (string) ob_get_clean();
+
+        [$binary] = ImageOptimizer::encode($png, ImageOptimizer::COVER, cropSquare: true);
+        $result = imagecreatefromstring($binary);
+
+        $this->assertSame([600, 600], [imagesx($result), imagesy($result)], 'Carré, sans agrandissement');
+        foreach ([[5, 5], [300, 300], [594, 594]] as [$x, $y]) {
+            $rgb = imagecolorsforindex($result, imagecolorat($result, $x, $y));
+            $this->assertGreaterThan(200, $rgb['blue'], "Pixel ($x,$y) issu du centre bleu");
+            $this->assertLessThan(60, $rgb['red']);
+        }
     }
 
     public function test_small_images_are_not_enlarged(): void
@@ -111,7 +132,7 @@ class ImageOptimizationTest extends TestCase
         $this->assertNotSame('covers/ancienne.png', $book->cover);
         $disk->assertMissing('covers/ancienne.png');
         $disk->assertExists($book->cover);
-        $this->assertSame([600, 900], array_slice(getimagesizefromstring($disk->get($book->cover)), 0, 2));
+        $this->assertSame([900, 900], array_slice(getimagesizefromstring($disk->get($book->cover)), 0, 2));
 
         $disk->assertMissing('descriptions/photo.png');
         $this->assertStringNotContainsString('photo.png', $book->description);

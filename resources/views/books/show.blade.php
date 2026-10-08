@@ -59,7 +59,7 @@
             {{-- Couverture --}}
             <div class="mx-auto w-full max-w-xs lg:max-w-none">
                 <div class="relative lg:sticky lg:top-24">
-                    <img src="{{ $book->coverUrl() }}" alt="Couverture de {{ $book->title }}" width="600" height="900"
+                    <img src="{{ $book->coverUrl() }}" alt="Couverture de {{ $book->title }}" width="900" height="900"
                          class="aspect-cover w-full rounded-2xl object-cover shadow-cover">
                     @if ($book->isOnPromo())
                         <span class="badge absolute left-3 top-3 bg-rose-600 text-white shadow">Promo −{{ $book->discountPercent() }} %</span>

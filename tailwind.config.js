@@ -50,7 +50,8 @@ export default {
                 serif: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
             },
             aspectRatio: {
-                cover: '2 / 3',
+                // Format des couvertures (carré).
+                cover: '1 / 1',
             },
             boxShadow: {
                 cover: '0 10px 30px -12px rgba(11, 31, 42, 0.45)',

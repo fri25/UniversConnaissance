@@ -50,7 +50,7 @@
             <div class="relative mx-auto hidden h-[26rem] w-full max-w-md sm:block" aria-hidden="true">
                 @foreach ($newReleases->take(3) as $i => $book)
                     <img src="{{ $book->coverUrl() }}" alt=""
-                         class="absolute w-52 rounded-xl shadow-cover transition duration-500 hover:z-10 hover:-translate-y-3
+                         class="absolute aspect-cover w-52 rounded-xl object-cover shadow-cover transition duration-500 hover:z-10 hover:-translate-y-3
                                 {{ ['left-0 top-10 -rotate-6', 'left-1/2 top-0 z-[1] -translate-x-1/2 rotate-0', 'right-0 top-12 rotate-6'][$i] }}">
                 @endforeach
             </div>

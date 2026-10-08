@@ -2,7 +2,7 @@
 @php($owned = $owned || in_array($book->id, auth()->user()?->ownedBookIds() ?? [], true))
 <article {{ $attributes->merge(['class' => 'group flex flex-col']) }} data-reveal>
     <a href="{{ route('books.show', $book) }}" class="relative block overflow-hidden rounded-xl bg-slate-100 shadow-cover transition duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl dark:bg-ink-700">
-        <img src="{{ $book->coverUrl() }}" alt="Couverture de {{ $book->title }}" loading="lazy" width="400" height="600"
+        <img src="{{ $book->coverUrl() }}" alt="Couverture de {{ $book->title }}" loading="lazy" width="400" height="400"
              class="aspect-cover w-full object-cover transition duration-500 group-hover:scale-[1.04]">
 
         <span class="absolute left-2 top-2 flex flex-col items-start gap-1">

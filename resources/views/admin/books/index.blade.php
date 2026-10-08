@@ -27,7 +27,7 @@
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
-                                <img src="{{ $book->coverUrl() }}" alt="" class="h-14 w-10 rounded object-cover">
+                                <img src="{{ $book->coverUrl() }}" alt="" class="h-12 w-12 rounded object-cover">
                                 <div class="min-w-0">
                                     <p class="truncate font-semibold text-ink dark:text-white">{{ $book->title }}</p>
                                     <p class="truncate text-xs text-slate-500">{{ $book->authorNames() }}</p>

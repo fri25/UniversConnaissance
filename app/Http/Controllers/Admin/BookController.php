@@ -92,8 +92,8 @@ class BookController extends Controller
             if ($book->cover) {
                 Storage::disk('public')->delete($book->cover);
             }
-            // Redimensionnée et compressée (WebP) : une couverture brute pèse souvent 10 à 20 fois trop.
-            $data['cover'] = ImageOptimizer::storeUpload($request->file('cover'), 'covers', ImageOptimizer::COVER);
+            // Recadrée en carré, redimensionnée et compressée (WebP) : une couverture brute pèse souvent 10 à 20 fois trop.
+            $data['cover'] = ImageOptimizer::storeUpload($request->file('cover'), 'covers', ImageOptimizer::COVER, cropSquare: true);
         }
         if ($request->hasFile('file')) {
             $data['file_path'] = $this->replace($book->file_path, $request->file('file'), 'ebooks', $private);
