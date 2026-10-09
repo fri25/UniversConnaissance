@@ -193,6 +193,21 @@ class CheckoutTest extends TestCase
             ->assertSessionHas('error');
     }
 
+    public function test_admin_sees_exact_payment_error_but_customers_do_not(): void
+    {
+        $this->useChariow();
+        config(['payment.gateways.chariow.api_key' => null]);
+        $book = Book::factory()->create(['chariow_product_id' => 'prd_livre']);
+
+        $this->post(route('checkout.store', $book), self::FORM)
+            ->assertSessionHas('error', fn ($m) => ! str_contains($m, 'CHARIOW_API_KEY'));
+
+        $admin = User::factory()->create();
+        $admin->forceFill(['is_admin' => true])->save();
+        $this->actingAs($admin)->post(route('checkout.store', $book), self::FORM)
+            ->assertSessionHas('error', fn ($m) => str_contains($m, 'CHARIOW_API_KEY non configurée'));
+    }
+
     public function test_return_page_verifies_sale_with_chariow_and_offers_download(): void
     {
         Mail::fake();

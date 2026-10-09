@@ -79,7 +79,13 @@ class CheckoutController extends Controller
         } catch (PaymentException $e) {
             report($e);
 
-            return back()->withInput()->with('error', 'Le service de paiement est momentanément indisponible. Merci de réessayer dans quelques instants.');
+            $message = 'Le service de paiement est momentanément indisponible. Merci de réessayer dans quelques instants.';
+            // Un administrateur voit la cause exacte (clé API, produit, téléphone…) pour corriger la configuration.
+            if ($request->user()?->is_admin) {
+                $message .= ' [Admin] Détail : '.$e->getMessage();
+            }
+
+            return back()->withInput()->with('error', $message);
         }
 
         $order->update(['payment_reference' => $session->paymentReference]);
