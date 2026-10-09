@@ -99,21 +99,62 @@ class PurgeDemoDataTest extends TestCase
         $this->assertSame(12, Book::count());
     }
 
-    public function test_make_admin_promotes_existing_account(): void
+    private const ASK = 'Mot de passe (8 caractères minimum, rien ne s\'affiche)';
+
+    private const CONFIRM = 'Confirmez le mot de passe';
+
+    public function test_make_admin_creates_account_that_can_log_in(): void
     {
-        $user = User::factory()->create(['email' => 'moi@example.com']);
-
-        $this->artisan('uc:make-admin moi@example.com')->assertSuccessful();
-
-        $this->assertTrue($user->fresh()->is_admin);
-    }
-
-    public function test_make_admin_creates_account(): void
-    {
-        $this->artisan('uc:make-admin nouveau@example.com --name=Patron')
-            ->expectsQuestion('Mot de passe (8 caractères minimum, rien ne s\'affiche)', 'motdepasse-solide')
+        $this->artisan('uc:make-admin Nouveau@Example.com --name=Patron')
+            ->expectsQuestion(self::ASK, 'motdepasse-solide')
+            ->expectsQuestion(self::CONFIRM, 'motdepasse-solide')
             ->assertSuccessful();
 
         $this->assertTrue(User::where('email', 'nouveau@example.com')->firstOrFail()->is_admin);
+
+        $this->post('/login', ['email' => 'nouveau@example.com', 'password' => 'motdepasse-solide'])->assertRedirect();
+        $this->assertAuthenticated();
+        $this->get('/admin')->assertOk();
+    }
+
+    public function test_make_admin_resets_password_of_existing_account(): void
+    {
+        // Ex. : compte créé automatiquement lors d'un achat test, mot de passe inconnu.
+        $user = User::factory()->create(['email' => 'moi@example.com']);
+        $user->forceFill(['is_guest' => true])->save();
+
+        $this->artisan('uc:make-admin moi@example.com')
+            ->expectsOutputToContain('existe déjà')
+            ->expectsQuestion(self::ASK, 'nouveau-mdp-123')
+            ->expectsQuestion(self::CONFIRM, 'nouveau-mdp-123')
+            ->assertSuccessful();
+
+        $user->refresh();
+        $this->assertTrue($user->is_admin);
+        $this->assertFalse($user->is_guest);
+
+        $this->post('/login', ['email' => 'moi@example.com', 'password' => 'nouveau-mdp-123']);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_make_admin_can_keep_existing_password(): void
+    {
+        $user = User::factory()->create(['email' => 'moi@example.com']);
+        $hash = $user->password;
+
+        $this->artisan('uc:make-admin moi@example.com --keep-password')->assertSuccessful();
+
+        $this->assertTrue($user->fresh()->is_admin);
+        $this->assertSame($hash, $user->fresh()->password);
+    }
+
+    public function test_make_admin_rejects_mismatched_confirmation(): void
+    {
+        $this->artisan('uc:make-admin x@example.com')
+            ->expectsQuestion(self::ASK, 'motdepasse-solide')
+            ->expectsQuestion(self::CONFIRM, 'autre-chose-123')
+            ->assertFailed();
+
+        $this->assertDatabaseMissing('users', ['email' => 'x@example.com']);
     }
 }

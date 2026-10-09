@@ -175,7 +175,7 @@ Avant de vendre réellement, retirez les 12 e-books de démo, les comptes de tes
 cd ~/univers-connaissance
 mysqldump -h mysql-moncompte.alwaysdata.net -u moncompte_uc -p moncompte_uc > ~/sauvegarde.sql   # sauvegarde, par précaution
 
-php artisan uc:make-admin votre@email.com   # 1. votre propre compte administrateur
+php artisan uc:make-admin votre@email.com   # 1. votre compte administrateur (demande toujours le mot de passe)
 php artisan demo:purge                      # 2. aperçu : liste ce qui sera supprimé, ne supprime rien
 php artisan demo:purge --force              # 3. suppression réelle
 ```
