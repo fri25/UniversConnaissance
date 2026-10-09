@@ -27,6 +27,7 @@
     <section>
         <h2>Cookies et mesure publicitaire</h2>
         <p>Le site utilise des cookies techniques indispensables (session, sécurité CSRF) et le stockage local de votre navigateur pour mémoriser le thème clair/sombre et votre choix concernant les cookies.</p>
+        <p>Les petites images de drapeaux du sélecteur de pays (formulaire d'achat) sont chargées depuis le service flagcdn.com, qui reçoit à cette occasion l'adresse IP du visiteur, comme pour toute image hébergée ailleurs. Aucune donnée personnelle ne lui est transmise.</p>
         @if (app(\App\Services\MetaPixel::class)->enabled())
             <p>Avec votre accord (bandeau affiché lors de votre première visite), nous utilisons le <strong>pixel Meta</strong> (Facebook / Instagram) pour mesurer l'efficacité de nos publicités : pages consultées, clics sur « Acheter » et achats. Sans votre accord, il n'est pas chargé.</p>
             <p>Lorsqu'un achat est confirmé, nous pouvons transmettre à Meta, via son API Conversions, le montant, l'e-book acheté et vos coordonnées <strong>sous forme chiffrée (hachage SHA-256)</strong> : email, téléphone, prénom. Meta s'en sert uniquement pour rattacher l'achat à une publicité.</p>
