@@ -95,6 +95,42 @@ class CheckoutTest extends TestCase
             && str_contains($request['redirect_url'], 'signature='));
     }
 
+    public function test_any_country_can_be_chosen_with_searchable_selector(): void
+    {
+        $this->useChariow();
+        $this->fakeChariowCheckout();
+        $book = Book::factory()->create(['chariow_product_id' => 'prd_livre']);
+
+        $this->get(route('checkout.show', $book))
+            ->assertSee('Rechercher un pays ou un indicatif', false)
+            ->assertSee('Afrique du Sud')
+            ->assertSee('Zimbabwe');
+
+        $this->post(route('checkout.store', $book), ['phone_country' => 'MA', 'phone_number' => '+212 6 12 34 56 78'] + self::FORM)
+            ->assertRedirect();
+
+        Http::assertSent(fn ($request) => $request['phone'] === ['number' => '612345678', 'country_code' => 'MA']);
+    }
+
+    public function test_unknown_country_code_is_rejected(): void
+    {
+        $book = Book::factory()->create();
+
+        $this->post(route('checkout.store', $book), ['phone_country' => 'ZZ'] + self::FORM)
+            ->assertSessionHasErrors('phone_country');
+    }
+
+    public function test_country_list_is_complete(): void
+    {
+        $countries = \App\Support\Phone::countries();
+
+        $this->assertGreaterThan(240, count($countries));
+        $this->assertSame(['Bénin', '229'], $countries['BJ']);
+        $this->assertSame('225', $countries['CI'][1]);
+        $this->assertSame('1', $countries['US'][1]);
+        $this->assertSame('0102030405', \App\Support\Phone::digits('00225 01 02 03 04 05', 'CI'));
+    }
+
     public function test_form_is_validated(): void
     {
         $book = Book::factory()->create();

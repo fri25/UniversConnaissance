@@ -31,7 +31,7 @@ class CheckoutRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'email', 'max:255'],
-            'phone_country' => ['required', Rule::in(array_keys(Phone::COUNTRIES))],
+            'phone_country' => ['required', Rule::in(array_keys(Phone::countries()))],
             'phone_number' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9 ().-]{6,30}$/'],
         ];
     }

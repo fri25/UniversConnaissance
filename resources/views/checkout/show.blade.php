@@ -57,17 +57,10 @@
 
                 <fieldset>
                     <legend class="label">Téléphone (Mobile Money)</legend>
-                    <div class="flex gap-2">
-                        <label for="phone_country" class="sr-only">Pays</label>
-                        <select id="phone_country" name="phone_country" class="input !w-28 shrink-0 text-sm">
-                            @foreach (\App\Support\Phone::COUNTRIES as $code => [$country, $dial])
-                                <option value="{{ $code }}" @selected(old('phone_country', $user?->phone_country ?? 'BJ') === $code)>{{ $code }} +{{ $dial }}</option>
-                            @endforeach
-                        </select>
-                        <label for="phone_number" class="sr-only">Numéro</label>
-                        <input id="phone_number" type="tel" name="phone_number" required autocomplete="tel-national" inputmode="tel"
-                               value="{{ old('phone_number', $user?->phone) }}" placeholder="01 97 00 00 00" class="input text-sm">
-                    </div>
+                    @php($phoneCountry = old('phone_country', $user?->phone_country))
+                    <x-phone-input
+                        :country="array_key_exists((string) $phoneCountry, \App\Support\Phone::countries()) ? $phoneCountry : \App\Support\Phone::DEFAULT_COUNTRY"
+                        :number="old('phone_number', $user?->phone)" />
                     <p class="mt-1 text-xs text-slate-500">Requis par notre partenaire de paiement Chariow.</p>
                     <x-input-error :messages="$errors->get('phone_country')" class="mt-1" />
                     <x-input-error :messages="$errors->get('phone_number')" class="mt-1" />
