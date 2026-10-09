@@ -25,7 +25,7 @@ class MetaPixelTest extends TestCase
     private function buy(Book $book, string $email = 'x@example.com', string $name = 'Client Test'): Order
     {
         $this->post(route('checkout.store', $book), [
-            'name' => $name, 'email' => $email, 'phone_country' => 'BJ', 'phone_number' => '+229 01 97 00 00 00', 'accept_terms' => '1',
+            'name' => $name, 'email' => $email, 'phone_country' => 'BJ', 'phone_number' => '+229 01 97 00 00 00'
         ]);
         $order = Order::sole();
         $this->post(\Illuminate\Support\Facades\URL::temporarySignedRoute('payment.fake.complete', now()->addHour(), ['order' => $order->reference]), ['outcome' => 'success']);

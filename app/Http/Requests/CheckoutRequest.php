@@ -33,14 +33,12 @@ class CheckoutRequest extends FormRequest
             'email' => ['required', 'email', 'max:255'],
             'phone_country' => ['required', Rule::in(array_keys(Phone::COUNTRIES))],
             'phone_number' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9 ().-]{6,30}$/'],
-            'accept_terms' => ['accepted'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'accept_terms.accepted' => 'Vous devez accepter les conditions générales de vente.',
             'phone_number.regex' => 'Le numéro de téléphone n\'est pas valide.',
         ];
     }

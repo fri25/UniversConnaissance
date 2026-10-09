@@ -73,16 +73,14 @@
                     <x-input-error :messages="$errors->get('phone_number')" class="mt-1" />
                 </fieldset>
 
-                <label class="flex items-start gap-2 text-sm">
-                    <input type="checkbox" name="accept_terms" value="1" class="mt-0.5 rounded border-slate-300 text-brand-700 focus:ring-brand-500" @checked(old('accept_terms'))>
-                    <span>J'accepte les <a href="{{ route('pages.terms') }}" target="_blank" class="link">conditions générales de vente</a> et renonce à mon droit de rétractation pour un contenu numérique livré immédiatement.</span>
-                </label>
-                <x-input-error :messages="$errors->get('accept_terms')" class="mt-1" />
-
                 <button class="btn-primary w-full py-3 text-base" :disabled="loading">
                     <span x-show="!loading">Payer {{ fcfa($book->price) }}</span>
                     <span x-show="loading" x-cloak>Redirection vers le paiement…</span>
                 </button>
+                <p class="text-center text-xs text-slate-500">
+                    En cliquant sur « Payer », vous acceptez nos <a href="{{ route('pages.terms') }}" target="_blank" class="link">conditions générales de vente</a>
+                    et l'accès immédiat à l'e-book (sans droit de rétractation pour un contenu numérique).
+                </p>
                 <p class="text-center text-xs text-slate-500">
                     @if ($gateway === 'chariow')
                         Paiement sécurisé par Chariow : Mobile Money (MTN, Moov…) ou carte bancaire.

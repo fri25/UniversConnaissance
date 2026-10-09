@@ -26,7 +26,6 @@ class CheckoutTest extends TestCase
         'email' => 'Aicha@Example.com',
         'phone_country' => 'BJ',
         'phone_number' => '+229 01 97 00 00 00',
-        'accept_terms' => '1',
     ];
 
     private function useChariow(): void
@@ -101,7 +100,7 @@ class CheckoutTest extends TestCase
         $book = Book::factory()->create();
 
         $this->post(route('checkout.store', $book), ['email' => 'pas-un-email'])
-            ->assertSessionHasErrors(['name', 'email', 'phone_country', 'phone_number', 'accept_terms']);
+            ->assertSessionHasErrors(['name', 'email', 'phone_country', 'phone_number']);
 
         $this->assertDatabaseCount('orders', 0);
         $this->assertDatabaseCount('users', 0);
