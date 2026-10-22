@@ -86,7 +86,7 @@
         </div>
     </section>
 
-    {{-- Meilleures ventes --}}
+    {{-- Meilleures ventes
     <section class="mt-16 bg-slate-50 py-14 " aria-labelledby="titre-ventes">
         <div class="container-page">
             <div class="flex items-end justify-between gap-4">
@@ -102,7 +102,7 @@
                 @endforeach
             </div>
         </div>
-    </section>
+    </section> --}}
 
     {{-- Catalogue --}}
     <section id="catalogue" class="container-page scroll-mt-20 pt-16" aria-labelledby="titre-catalogue">
