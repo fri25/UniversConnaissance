@@ -15,8 +15,8 @@
     </svg>
     @unless ($compact)
         <span class="leading-none">
-            <span class="block font-serif text-lg font-bold tracking-tight text-ink dark:text-white">Univers</span>
-            <span class="block text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-700 dark:text-brand-300">Connaissance</span>
+            <span class="block font-serif text-lg font-bold tracking-tight text-ink ">Univers</span>
+            <span class="block text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-700 ">Connaissance</span>
         </span>
     @endunless
 </span>

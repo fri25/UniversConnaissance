@@ -11,8 +11,8 @@
          }"
          x-show="show" x-cloak x-transition.opacity
          role="dialog" aria-live="polite" aria-label="Cookies"
-         class="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5 dark:border-ink-600 dark:bg-ink-800">
-        <p class="text-sm text-slate-700 dark:text-slate-300">
+         class="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5 ">
+        <p class="text-sm text-slate-700 ">
             Nous utilisons des cookies de mesure publicitaire (Meta) pour comprendre d'où viennent nos lecteurs et améliorer nos annonces.
             Les cookies techniques nécessaires au site restent actifs dans tous les cas.
             <a href="{{ route('pages.privacy') }}" class="link">En savoir plus</a>

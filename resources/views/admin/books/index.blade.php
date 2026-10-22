@@ -1,6 +1,6 @@
 <x-admin-layout title="E-books">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">E-books</h1>
+        <h1 class="text-2xl font-bold text-ink ">E-books</h1>
         <div class="flex gap-2">
             <a href="{{ route('admin.books.import') }}" class="btn-outline">Import CSV</a>
             <a href="{{ route('admin.books.create') }}" class="btn-solid">+ Nouvel e-book</a>
@@ -21,15 +21,15 @@
 
     <div class="card overflow-x-auto">
         <table class="admin-table">
-            <thead class="bg-slate-50 dark:bg-ink-700"><tr><th>E-book</th><th>Format</th><th>Prix</th><th>Ventes</th><th>Statut</th><th class="!text-right">Actions</th></tr></thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-ink-700">
+            <thead class="bg-slate-50 "><tr><th>E-book</th><th>Format</th><th>Prix</th><th>Ventes</th><th>Statut</th><th class="!text-right">Actions</th></tr></thead>
+            <tbody class="divide-y divide-slate-100 ">
                 @forelse ($books as $book)
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
                                 <img src="{{ $book->coverUrl() }}" alt="" class="h-12 w-12 rounded object-cover">
                                 <div class="min-w-0">
-                                    <p class="truncate font-semibold text-ink dark:text-white">{{ $book->title }}</p>
+                                    <p class="truncate font-semibold text-ink ">{{ $book->title }}</p>
                                     <p class="truncate text-xs text-slate-500">{{ $book->authorNames() }}</p>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                             <a href="{{ route('admin.books.edit', $book) }}" class="link ml-3 text-xs">Modifier</a>
                             <form method="POST" action="{{ route('admin.books.destroy', $book) }}" class="ml-3 inline" onsubmit="return confirm('Supprimer cet e-book ?')">
                                 @csrf @method('DELETE')
-                                <button class="text-xs font-medium text-red-700 hover:underline dark:text-red-300">Supprimer</button>
+                                <button class="text-xs font-medium text-red-700 hover:underline ">Supprimer</button>
                             </form>
                         </td>
                     </tr>

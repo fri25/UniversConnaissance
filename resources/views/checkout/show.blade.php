@@ -1,35 +1,35 @@
 <x-app-layout title="Acheter — {{ $book->title }}">
     <div class="container-page max-w-4xl py-10">
         <ol class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500" aria-label="Étapes">
-            <li class="text-brand-700 dark:text-brand-300">1. Vos coordonnées</li>
+            <li class="text-brand-700 ">1. Vos coordonnées</li>
             <li aria-hidden="true">→</li>
             <li>2. Paiement</li>
             <li aria-hidden="true">→</li>
             <li>3. Téléchargement</li>
         </ol>
-        <h1 class="mt-3 text-3xl font-bold text-ink dark:text-white">Finaliser votre achat</h1>
-        <p class="mt-1 text-slate-600 dark:text-slate-400">Aucun compte à créer : votre e-book sera envoyé à l'adresse email indiquée.</p>
+        <h1 class="mt-3 text-3xl font-bold text-ink ">Finaliser votre achat</h1>
+        <p class="mt-1 text-slate-600 ">Aucun compte à créer : votre e-book sera envoyé à l'adresse email indiquée.</p>
 
         <div class="mt-8 grid gap-8 md:grid-cols-[1fr_22rem]">
             <div class="card flex h-fit gap-5 p-5">
                 <img src="{{ $book->coverUrl() }}" alt="" class="aspect-cover h-28 w-28 shrink-0 self-start rounded-lg object-cover shadow-cover">
                 <div>
-                    <h2 class="font-serif text-xl font-bold text-ink dark:text-white">{{ $book->title }}</h2>
+                    <h2 class="font-serif text-xl font-bold text-ink ">{{ $book->title }}</h2>
                     @if ($book->authors->isNotEmpty())
-                        <p class="text-slate-600 dark:text-slate-400">{{ $book->authorNames() }}</p>
+                        <p class="text-slate-600 ">{{ $book->authorNames() }}</p>
                     @endif
                     <p class="mt-2 text-sm text-slate-500">Format : {{ $book->formatLabel() }} @if ($book->humanFileSize()) · {{ $book->humanFileSize() }} @endif</p>
-                    <ul class="mt-4 space-y-1 text-sm text-slate-700 dark:text-slate-300">
+                    <ul class="mt-4 space-y-1 text-sm text-slate-700 ">
                         <li>✓ Téléchargement immédiat après paiement</li>
                         <li>✓ Lien de téléchargement envoyé par email</li>
                         <li>✓ Fichier personnalisé à votre nom</li>
                     </ul>
-                    <dl class="mt-5 space-y-1 border-t border-slate-200 pt-4 text-sm dark:border-ink-600">
+                    <dl class="mt-5 space-y-1 border-t border-slate-200 pt-4 text-sm ">
                         @if ($book->isOnPromo())
                             <div class="flex justify-between gap-6"><dt>Prix</dt><dd>{{ fcfa($book->old_price) }}</dd></div>
-                            <div class="flex justify-between gap-6 text-rose-700 dark:text-rose-300"><dt>Réduction</dt><dd>−{{ fcfa($book->old_price - $book->price) }}</dd></div>
+                            <div class="flex justify-between gap-6 text-rose-700 "><dt>Réduction</dt><dd>−{{ fcfa($book->old_price - $book->price) }}</dd></div>
                         @endif
-                        <div class="flex justify-between gap-6 text-base font-bold text-ink dark:text-white"><dt>Total</dt><dd>{{ fcfa($book->price) }}</dd></div>
+                        <div class="flex justify-between gap-6 text-base font-bold text-ink "><dt>Total</dt><dd>{{ fcfa($book->price) }}</dd></div>
                     </dl>
                 </div>
             </div>
@@ -46,7 +46,7 @@
                 <div>
                     <label for="email" class="label">Adresse email</label>
                     @if ($user)
-                        <input id="email" type="email" value="{{ $user->email }}" class="input bg-slate-50 dark:bg-ink-800" readonly>
+                        <input id="email" type="email" value="{{ $user->email }}" class="input bg-slate-50 " readonly>
                         <p class="mt-1 text-xs text-slate-500">L'achat sera ajouté à votre compte.</p>
                     @else
                         <input id="email" type="email" name="email" required autocomplete="email" value="{{ old('email') }}" class="input" placeholder="vous@exemple.com">

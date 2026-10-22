@@ -1,6 +1,6 @@
 <x-guest-layout title="Créer un compte">
-    <h1 class="text-2xl font-bold text-ink dark:text-white">Rejoignez l'univers</h1>
-    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Créez votre compte en 30 secondes et commencez à lire.</p>
+    <h1 class="text-2xl font-bold text-ink ">Rejoignez l'univers</h1>
+    <p class="mt-1 text-sm text-slate-600 ">Créez votre compte en 30 secondes et commencez à lire.</p>
 
     <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">
         @csrf
@@ -38,7 +38,7 @@
         <x-primary-button class="w-full py-3">Créer mon compte</x-primary-button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
+    <p class="mt-6 text-center text-sm text-slate-600 ">
         {{ __('Already registered?') }} <a href="{{ route('login') }}" class="link">Se connecter</a>
     </p>
 </x-guest-layout>

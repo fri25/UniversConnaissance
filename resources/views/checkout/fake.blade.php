@@ -2,8 +2,8 @@
     <div class="container-page max-w-lg py-12">
         <div class="card p-6 text-center">
             <span class="badge bg-amber-100 text-amber-900">Mode démonstration</span>
-            <h1 class="mt-4 text-2xl font-bold text-ink dark:text-white">Paiement simulé</h1>
-            <p class="mt-2 text-slate-600 dark:text-slate-400">
+            <h1 class="mt-4 text-2xl font-bold text-ink ">Paiement simulé</h1>
+            <p class="mt-2 text-slate-600 ">
                 Commande <strong>{{ $order->reference }}</strong> — {{ $order->book->title }}<br>
                 Montant : <strong>{{ fcfa($order->amount) }}</strong><br>
                 <span class="text-sm">Acheteur : {{ $order->user->email }}</span>

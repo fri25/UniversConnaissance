@@ -6,7 +6,6 @@ return [
 
     'support' => [
         'email' => env('STORE_SUPPORT_EMAIL', 'support@universconnaissance.com'),
-        'phone' => env('STORE_SUPPORT_PHONE', '+229 01 00 00 00 00'),
         'hours' => 'Du lundi au samedi, 8h – 19h (GMT+1)',
     ],
 

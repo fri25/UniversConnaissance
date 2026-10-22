@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,13 @@ class UserController extends Controller
             ->withQueryString();
 
         return view('admin.users.index', compact('users'));
+    }
+
+    public function store(RegisterRequest $request): RedirectResponse
+    {
+        User::create($request->safe()->only(['name', 'email', 'phone', 'password']));
+
+        return redirect()->route('admin.users.index')->with('status', 'Utilisateur créé.');
     }
 
     public function toggleAdmin(Request $request, User $user): RedirectResponse

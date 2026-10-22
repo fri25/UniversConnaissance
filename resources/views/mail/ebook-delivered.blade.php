@@ -35,6 +35,6 @@ Bonne lecture,<br>
 L'équipe {{ config('store.name') }}
 
 <x-mail::subcopy>
-Besoin d'aide ? Écrivez-nous à {{ config('store.support.email') }} ou appelez le {{ config('store.support.phone') }}.
+Besoin d'aide ? Écrivez-nous à {{ config('store.support.email') }}.
 </x-mail::subcopy>
 </x-mail::message>

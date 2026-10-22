@@ -20,3 +20,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Ancien clone local, ne pas versionner
+/UniversConnaissance/

@@ -14,7 +14,7 @@
 
     <main id="contenu" class="flex-1">
         @isset($header)
-            <div class="border-b border-slate-200 bg-slate-50 dark:border-ink-600 dark:bg-ink-800">
+            <div class="border-b border-slate-200 bg-slate-50 ">
                 <div class="container-page py-8">
                     {{ $header }}
                 </div>

@@ -1,4 +1,4 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white dark:bg-ink-800'])
+@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white '])
 
 @php
 $alignmentClasses = match ($align) {
@@ -28,7 +28,7 @@ $width = match ($width) {
             class="absolute z-50 mt-2 {{ $width }} rounded-xl shadow-lg {{ $alignmentClasses }}"
             style="display: none;"
             @click="open = false">
-        <div class="rounded-xl ring-1 ring-black/5 dark:ring-ink-600 {{ $contentClasses }}">
+        <div class="rounded-xl ring-1 ring-black/5 {{ $contentClasses }}">
             {{ $content }}
         </div>
     </div>

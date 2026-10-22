@@ -35,7 +35,7 @@
     <p class="mt-1 text-xs text-slate-500" x-text="current().name"></p>
 
     <div x-show="open" x-cloak
-         class="absolute left-0 z-50 mt-1 w-full max-w-sm rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-ink-600 dark:bg-ink-800">
+         class="absolute left-0 z-50 mt-1 w-full max-w-sm rounded-xl border border-slate-200 bg-white p-2 shadow-xl ">
         <label class="sr-only" for="{{ $countryName }}-search">Rechercher un pays</label>
         <input id="{{ $countryName }}-search" x-ref="search" type="search" x-model="query" autocomplete="off"
                @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)" @keydown.enter.prevent="choose(filtered()[active])"
@@ -44,12 +44,12 @@
             <template x-for="(option, index) in filtered()" :key="option.code">
                 <li role="option" :aria-selected="(option.code === selected).toString()"
                     @click="choose(option)" @mouseenter="active = index"
-                    :class="index === active ? 'bg-brand-50 dark:bg-ink-700' : ''"
+                    :class="index === active ? 'bg-brand-50 ' : ''"
                     class="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm">
                     <span class="flex min-w-0 items-center gap-3">
                         <img :src="flag(option.code)" :srcset="flag(option.code, 2) + ' 2x'" alt="" width="24" height="18" loading="lazy"
                              class="h-[18px] w-6 shrink-0 rounded-[2px] object-cover shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
-                        <span class="truncate text-slate-800 dark:text-slate-100" x-text="option.name"></span>
+                        <span class="truncate text-slate-800 " x-text="option.name"></span>
                     </span>
                     <span class="shrink-0 tabular-nums text-slate-500" x-text="'+' + option.dial"></span>
                 </li>

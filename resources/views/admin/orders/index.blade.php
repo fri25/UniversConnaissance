@@ -1,6 +1,6 @@
 <x-admin-layout title="Commandes">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">Commandes</h1>
+        <h1 class="text-2xl font-bold text-ink ">Commandes</h1>
     </x-slot>
 
     <form class="card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -33,8 +33,8 @@
 
     <div class="card overflow-x-auto">
         <table class="admin-table">
-            <thead class="bg-slate-50 dark:bg-ink-700"><tr><th>Référence</th><th>Client</th><th>E-book</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-ink-700">
+            <thead class="bg-slate-50 "><tr><th>Référence</th><th>Client</th><th>E-book</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
+            <tbody class="divide-y divide-slate-100 ">
                 @forelse ($orders as $order)
                     <tr>
                         <td><a href="{{ route('admin.orders.show', $order) }}" class="link font-mono text-xs">{{ $order->reference }}</a></td>

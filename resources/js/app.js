@@ -2,21 +2,6 @@ import './bootstrap';
 
 import Alpine from 'alpinejs';
 
-// Thème clair / sombre mémorisé (la classe initiale est posée par un script
-// inline dans <head> pour éviter le flash).
-Alpine.store('theme', {
-    dark: document.documentElement.classList.contains('dark'),
-    toggle() {
-        this.dark = !this.dark;
-        document.documentElement.classList.toggle('dark', this.dark);
-        try {
-            localStorage.setItem('theme', this.dark ? 'dark' : 'light');
-        } catch (e) {
-            // stockage indisponible (navigation privée) : on ignore
-        }
-    },
-});
-
 window.Alpine = Alpine;
 Alpine.start();
 

@@ -1,14 +1,14 @@
 <x-admin-layout title="Réglages">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">Réglages</h1>
+        <h1 class="text-2xl font-bold text-ink ">Réglages</h1>
     </x-slot>
 
     <form method="POST" action="{{ route('admin.settings.update') }}" class="card max-w-2xl space-y-6 p-5 sm:p-6">
         @csrf @method('PUT')
 
         <div>
-            <h2 class="font-sans text-base font-semibold text-ink dark:text-white">Pixel Meta (Facebook / Instagram)</h2>
-            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            <h2 class="font-sans text-base font-semibold text-ink ">Pixel Meta (Facebook / Instagram)</h2>
+            <p class="mt-1 text-sm text-slate-600 ">
                 Mesure les visites, les clics sur « Acheter » et les achats pour vos publicités Meta.
                 Le pixel ne se déclenche qu'après acceptation du bandeau cookies par le visiteur.
             </p>

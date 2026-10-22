@@ -1,7 +1,7 @@
 @php($editing = $author->exists)
 <x-admin-layout :title="$editing ? 'Modifier un auteur' : 'Nouvel auteur'">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">{{ $editing ? $author->name : 'Nouvel auteur' }}</h1>
+        <h1 class="text-2xl font-bold text-ink ">{{ $editing ? $author->name : 'Nouvel auteur' }}</h1>
         <a href="{{ route('admin.authors.index') }}" class="btn-ghost">← Retour</a>
     </x-slot>
 

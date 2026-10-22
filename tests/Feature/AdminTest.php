@@ -159,6 +159,43 @@ class AdminTest extends TestCase
         $this->assertDatabaseHas('categories', ['slug' => 'poesie']);
     }
 
+    public function test_admin_can_create_a_regular_user(): void
+    {
+        $this->actingAs($this->admin)->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('Créer un utilisateur');
+
+        $this->actingAs($this->admin)->post(route('admin.users.store'), [
+            'name' => 'Awa Diallo',
+            'email' => 'awa@example.com',
+            'phone' => '+229 01 97 00 00 00',
+            'password' => 'Secure-password-123!',
+            'password_confirmation' => 'Secure-password-123!',
+            'is_admin' => true,
+        ])->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('status', 'Utilisateur créé.');
+
+        $user = User::where('email', 'awa@example.com')->firstOrFail();
+        $this->assertSame('Awa Diallo', $user->name);
+        $this->assertSame('+229 01 97 00 00 00', $user->phone);
+        $this->assertTrue(password_verify('Secure-password-123!', $user->password));
+        $this->assertFalse($user->is_admin);
+        $this->assertAuthenticatedAs($this->admin);
+    }
+
+    public function test_admin_user_creation_validates_registration_fields(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.users.store'), [
+            'name' => '',
+            'email' => 'not-an-email',
+            'phone' => 'invalid phone!',
+            'password' => 'short',
+            'password_confirmation' => 'different',
+        ])->assertSessionHasErrors(['name', 'email', 'phone', 'password']);
+
+        $this->assertDatabaseCount('users', 1);
+    }
+
     public function test_orders_can_be_filtered_and_delivery_email_resent(): void
     {
         Mail::fake();
@@ -185,6 +222,46 @@ class AdminTest extends TestCase
 
         $this->actingAs($this->admin)->delete(route('admin.reviews.destroy', $review));
         $this->assertModelMissing($review);
+    }
+
+    public function test_admin_can_add_a_published_review_for_a_book(): void
+    {
+        $book = Book::factory()->create();
+        $reviewer = User::factory()->create();
+
+        $this->actingAs($this->admin)->get(route('admin.reviews.index'))
+            ->assertOk()
+            ->assertSee('Ajouter un avis');
+
+        $this->actingAs($this->admin)->post(route('admin.reviews.store'), [
+            'user_id' => $reviewer->id,
+            'book_id' => $book->id,
+            'rating' => 5,
+            'comment' => 'Un excellent livre.',
+        ])->assertRedirect()->assertSessionHas('status', 'Avis ajouté et publié.');
+
+        $this->assertDatabaseHas('reviews', [
+            'user_id' => $reviewer->id,
+            'book_id' => $book->id,
+            'rating' => 5,
+            'comment' => 'Un excellent livre.',
+            'is_approved' => true,
+        ]);
+    }
+
+    public function test_admin_cannot_add_a_second_review_for_the_same_book(): void
+    {
+        $book = Book::factory()->create();
+        $reviewer = User::factory()->create();
+        Review::factory()->for($reviewer)->for($book)->create();
+
+        $this->actingAs($this->admin)->post(route('admin.reviews.store'), [
+            'user_id' => $reviewer->id,
+            'book_id' => $book->id,
+            'rating' => 4,
+        ])->assertSessionHasErrors('book_id');
+
+        $this->assertDatabaseCount('reviews', 1);
     }
 
     public function test_csv_import_creates_inactive_books(): void

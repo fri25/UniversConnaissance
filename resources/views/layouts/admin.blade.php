@@ -5,7 +5,7 @@
     <meta name="robots" content="noindex">
     @stack('head')
 </head>
-<body class="bg-slate-50 font-sans dark:bg-ink" x-data="{ nav: false }">
+<body class="bg-slate-50 font-sans " x-data="{ nav: false }">
     @php($links = [
         ['admin.dashboard', 'admin.dashboard', 'Tableau de bord', 'M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5'],
         ['admin.books.index', 'admin.books.*', 'E-books', 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25'],
@@ -18,7 +18,7 @@
     ])
 
     {{-- Barre supérieure mobile --}}
-    <div class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden dark:border-ink-600 dark:bg-ink-800">
+    <div class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden ">
         <a href="{{ route('admin.dashboard') }}"><x-application-logo /></a>
         <button type="button" class="btn-ghost h-10 w-10 !p-0" @click="nav = !nav" :aria-expanded="nav.toString()" aria-label="Menu d'administration">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -27,7 +27,7 @@
 
     <div class="flex">
         <aside :class="nav ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 dark:border-ink-600 dark:bg-ink-800">
+               class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ">
             <div class="flex h-16 items-center px-5">
                 <a href="{{ route('admin.dashboard') }}"><x-application-logo /></a>
             </div>
@@ -37,18 +37,15 @@
                     <a href="{{ route($route) }}"
                        @class([
                            'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition',
-                           'bg-brand-50 text-brand-900 dark:bg-brand-950 dark:text-brand-100' => request()->routeIs($pattern),
-                           'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-ink-700' => ! request()->routeIs($pattern),
+                           'bg-brand-50 text-brand-900 ' => request()->routeIs($pattern),
+                           'text-slate-700 hover:bg-slate-100 ' => ! request()->routeIs($pattern),
                        ])>
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/></svg>
                         {{ $label }}
                     </a>
                 @endforeach
             </nav>
-            <div class="space-y-1 border-t border-slate-200 p-3 dark:border-ink-600">
-                <button type="button" @click="$store.theme.toggle()" class="btn-ghost w-full justify-start">
-                    <span x-text="$store.theme.dark ? 'Mode clair' : 'Mode sombre'"></span>
-                </button>
+            <div class="space-y-1 border-t border-slate-200 p-3">
                 <a href="{{ route('home') }}" class="btn-ghost w-full justify-start">← Voir la boutique</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

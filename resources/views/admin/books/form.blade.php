@@ -6,7 +6,7 @@
 @endphp
 <x-admin-layout :title="$editing ? 'Modifier un e-book' : 'Nouvel e-book'">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">{{ $editing ? 'Modifier « '.$book->title.' »' : 'Nouvel e-book' }}</h1>
+        <h1 class="text-2xl font-bold text-ink ">{{ $editing ? 'Modifier « '.$book->title.' »' : 'Nouvel e-book' }}</h1>
         <a href="{{ route('admin.books.index') }}" class="btn-ghost">← Retour</a>
     </x-slot>
 
@@ -70,7 +70,7 @@
             </div>
 
             <details class="text-sm">
-                <summary class="cursor-pointer text-slate-600 dark:text-slate-400">Adresse de la page (slug)</summary>
+                <summary class="cursor-pointer text-slate-600 ">Adresse de la page (slug)</summary>
                 <div class="mt-2">
                     <label for="slug" class="sr-only">Slug</label>
                     <input id="slug" name="slug" value="{{ old('slug', $book->slug) }}" class="input" placeholder="générée automatiquement à partir du titre">

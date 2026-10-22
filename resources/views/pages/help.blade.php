@@ -1,12 +1,8 @@
 <x-static-page title="Centre d'aide" intro="Les réponses aux questions les plus fréquentes. Une autre question ? Notre équipe est là pour vous.">
-    <div class="grid gap-4 sm:grid-cols-2">
+    <div class="grid gap-4">
         <a href="mailto:{{ config('store.support.email') }}" class="card p-5 transition hover:border-brand-500">
             <p class="text-sm text-slate-500">Écrivez-nous</p>
-            <p class="font-semibold text-ink dark:text-white">{{ config('store.support.email') }}</p>
-        </a>
-        <a href="tel:{{ preg_replace('/\s+/', '', config('store.support.phone')) }}" class="card p-5 transition hover:border-brand-500">
-            <p class="text-sm text-slate-500">Appelez-nous · {{ config('store.support.hours') }}</p>
-            <p class="font-semibold text-ink dark:text-white">{{ config('store.support.phone') }}</p>
+            <p class="font-semibold text-ink ">{{ config('store.support.email') }}</p>
         </a>
     </div>
 
@@ -22,9 +18,9 @@
             'Puis-je être remboursé ?' => 'S\'agissant d\'un contenu numérique livré immédiatement, l\'achat est définitif (voir nos CGV). En cas de fichier défectueux, nous vous fournissons un fichier corrigé ou un remboursement.',
         ] as $question => $answer)
             <details class="card group p-5">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink dark:text-white">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink ">
                     {{ $question }}
-                    <span class="text-brand-700 transition group-open:rotate-45 dark:text-brand-300" aria-hidden="true">+</span>
+                    <span class="text-brand-700 transition group-open:rotate-45 " aria-hidden="true">+</span>
                 </summary>
                 <p class="mt-3">{{ $answer }}</p>
             </details>

@@ -1,7 +1,7 @@
 @props(['book', 'owned' => false])
 @php($owned = $owned || in_array($book->id, auth()->user()?->ownedBookIds() ?? [], true))
 <article {{ $attributes->merge(['class' => 'group flex flex-col']) }} data-reveal>
-    <a href="{{ route('books.show', $book) }}" class="relative block overflow-hidden rounded-xl bg-slate-100 shadow-cover transition duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl dark:bg-ink-700">
+    <a href="{{ route('books.show', $book) }}" class="relative block overflow-hidden rounded-xl bg-slate-100 shadow-cover transition duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl ">
         <img src="{{ $book->coverUrl() }}" alt="Couverture de {{ $book->title }}" loading="lazy" width="400" height="400"
              class="aspect-cover w-full object-cover transition duration-500 group-hover:scale-[1.04]">
 
@@ -21,14 +21,14 @@
 
     <div class="mt-3 flex flex-1 flex-col">
         @if ($book->categories->isNotEmpty())
-            <a href="{{ route('categories.show', $book->categories->first()) }}" class="text-xs font-semibold uppercase tracking-wide text-brand-700 hover:underline dark:text-brand-300">
+            <a href="{{ route('categories.show', $book->categories->first()) }}" class="text-xs font-semibold uppercase tracking-wide text-brand-700 hover:underline ">
                 {{ $book->categories->first()->name }}
             </a>
         @endif
-        <h3 class="mt-1 font-serif text-base font-bold leading-snug text-ink dark:text-white">
-            <a href="{{ route('books.show', $book) }}" class="hover:text-brand-700 dark:hover:text-brand-300">{{ $book->title }}</a>
+        <h3 class="mt-1 font-serif text-base font-bold leading-snug text-ink ">
+            <a href="{{ route('books.show', $book) }}" class="hover:text-brand-700 ">{{ $book->title }}</a>
         </h3>
-        <p class="mt-0.5 line-clamp-1 text-sm text-slate-600 dark:text-slate-400">{{ $book->authorNames() }}</p>
+        <p class="mt-0.5 line-clamp-1 text-sm text-slate-600 ">{{ $book->authorNames() }}</p>
         <x-rating-stars class="mt-1.5" :value="$book->rating_avg" :count="$book->rating_count ?? 0" />
         <x-book-price :book="$book" class="mt-2" />
 

@@ -1,12 +1,12 @@
 <x-admin-layout title="Commande {{ $order->reference }}">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">Commande <span class="font-mono">{{ $order->reference }}</span></h1>
+        <h1 class="text-2xl font-bold text-ink ">Commande <span class="font-mono">{{ $order->reference }}</span></h1>
         <a href="{{ route('admin.orders.index') }}" class="btn-ghost">← Retour</a>
     </x-slot>
 
     <div class="grid gap-6 lg:grid-cols-2">
         <div class="card p-5">
-            <h2 class="font-sans font-semibold text-ink dark:text-white">Détail</h2>
+            <h2 class="font-sans font-semibold text-ink ">Détail</h2>
             <dl class="mt-4 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
                 <dt class="text-slate-500">Statut</dt><dd><x-order-status :order="$order" /></dd>
                 <dt class="text-slate-500">Montant</dt><dd class="font-semibold">{{ fcfa($order->amount) }} ({{ $order->currency }})</dd>
@@ -18,7 +18,7 @@
         </div>
 
         <div class="card p-5">
-            <h2 class="font-sans font-semibold text-ink dark:text-white">Client & e-book</h2>
+            <h2 class="font-sans font-semibold text-ink ">Client & e-book</h2>
             <dl class="mt-4 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
                 <dt class="text-slate-500">Client</dt><dd>{{ $order->user->name }}</dd>
                 <dt class="text-slate-500">Email</dt><dd>{{ $order->user->email }}</dd>
@@ -28,7 +28,7 @@
         </div>
 
         <div class="card p-5 lg:col-span-2">
-            <h2 class="font-sans font-semibold text-ink dark:text-white">Livraison</h2>
+            <h2 class="font-sans font-semibold text-ink ">Livraison</h2>
             @if ($order->download)
                 <dl class="mt-4 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
                     <dt class="text-slate-500">Téléchargements</dt><dd>{{ $order->download->download_count }} / {{ $order->download->max_downloads }}</dd>

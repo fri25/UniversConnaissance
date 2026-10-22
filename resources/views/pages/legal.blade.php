@@ -5,7 +5,7 @@
             Siège social : [adresse complète]<br>
             RCCM : [numéro] · IFU : [numéro]<br>
             Directeur de la publication : [nom]<br>
-            Contact : {{ config('store.support.email') }} · {{ config('store.support.phone') }}</p>
+            Contact : {{ config('store.support.email') }}</p>
     </section>
     <section>
         <h2>Hébergement</h2>

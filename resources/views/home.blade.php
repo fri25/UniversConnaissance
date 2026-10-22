@@ -1,9 +1,9 @@
 <x-app-layout>
     {{-- Hero --}}
     <section class="relative overflow-hidden">
-        <div class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-50 via-white to-brand-100 dark:from-ink dark:via-ink-800 dark:to-brand-950" aria-hidden="true"></div>
-        <div class="absolute -right-32 -top-32 -z-10 h-[28rem] w-[28rem] rounded-full bg-brand-300/40 blur-3xl dark:bg-brand-700/30" aria-hidden="true"></div>
-        <div class="absolute -bottom-40 -left-20 -z-10 h-80 w-80 rounded-full bg-brand-200/50 blur-3xl dark:bg-brand-900/40" aria-hidden="true"></div>
+        <div class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-50 via-white to-brand-100 " aria-hidden="true"></div>
+        <div class="absolute -right-32 -top-32 -z-10 h-[28rem] w-[28rem] rounded-full bg-brand-300/40 blur-3xl " aria-hidden="true"></div>
+        <div class="absolute -bottom-40 -left-20 -z-10 h-80 w-80 rounded-full bg-brand-200/50 blur-3xl " aria-hidden="true"></div>
 
         <div class="container-page grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
             <div class="animate-fade-up">
@@ -11,12 +11,12 @@
                     <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-brand-500"></span>
                     {{ config('store.tagline') }}
                 </span>
-                <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl dark:text-white">
+                <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl ">
                     Explorez l'univers de la <span class="text-gradient">connaissance</span>
                 </h1>
-                <p class="mt-5 max-w-xl text-lg text-slate-600 dark:text-slate-300">
+                <p class="mt-5 max-w-xl text-lg text-slate-600 ">
                     Des centaines de pages à dévorer : littérature, business, sciences, développement personnel…
-                    Des <strong class="font-semibold text-ink dark:text-white">e-books en téléchargement instantané</strong>,
+                    Des <strong class="font-semibold text-ink ">e-books en téléchargement instantané</strong>,
                     payés en toute sécurité par Mobile Money.
                 </p>
                 <div class="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -32,16 +32,16 @@
                 </div>
                 <dl class="mt-10 grid max-w-md grid-cols-3 gap-4 text-center sm:text-left">
                     <div>
-                        <dt class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Formats</dt>
-                        <dd class="mt-1 font-serif text-xl font-bold text-ink dark:text-white">PDF · EPUB</dd>
+                        <dt class="text-xs uppercase tracking-wide text-slate-500 ">Formats</dt>
+                        <dd class="mt-1 font-serif text-xl font-bold text-ink ">PDF · EPUB</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Livraison</dt>
-                        <dd class="mt-1 font-serif text-xl font-bold text-ink dark:text-white">Immédiate</dd>
+                        <dt class="text-xs uppercase tracking-wide text-slate-500 ">Livraison</dt>
+                        <dd class="mt-1 font-serif text-xl font-bold text-ink ">Immédiate</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Paiement</dt>
-                        <dd class="mt-1 font-serif text-xl font-bold text-ink dark:text-white">Mobile Money</dd>
+                        <dt class="text-xs uppercase tracking-wide text-slate-500 ">Paiement</dt>
+                        <dd class="mt-1 font-serif text-xl font-bold text-ink ">Mobile Money</dd>
                     </div>
                 </dl>
             </div>
@@ -63,7 +63,7 @@
         <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none]">
             @foreach ($categories as $category)
                 <a href="{{ route('categories.show', $category) }}"
-                   class="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-500 hover:text-brand-800 dark:border-ink-600 dark:bg-ink-800 dark:text-slate-200 dark:hover:text-brand-300">
+                   class="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-500 hover:text-brand-800 ">
                     {{ $category->name }} <span class="text-slate-400">· {{ $category->books_count }}</span>
                 </a>
             @endforeach
@@ -75,7 +75,7 @@
         <div class="flex items-end justify-between gap-4">
             <div>
                 <h2 id="titre-nouveautes" class="section-title">Nouveautés</h2>
-                <p class="mt-1 text-slate-600 dark:text-slate-400">Les derniers e-books arrivés dans l'univers.</p>
+                <p class="mt-1 text-slate-600 ">Les derniers e-books arrivés dans l'univers.</p>
             </div>
             <a href="{{ route('books.index', ['sort' => 'recent']) }}" class="link shrink-0 text-sm">Tout voir →</a>
         </div>
@@ -87,12 +87,12 @@
     </section>
 
     {{-- Meilleures ventes --}}
-    <section class="mt-16 bg-slate-50 py-14 dark:bg-ink-800" aria-labelledby="titre-ventes">
+    <section class="mt-16 bg-slate-50 py-14 " aria-labelledby="titre-ventes">
         <div class="container-page">
             <div class="flex items-end justify-between gap-4">
                 <div>
                     <h2 id="titre-ventes" class="section-title">Meilleures ventes</h2>
-                    <p class="mt-1 text-slate-600 dark:text-slate-400">Ce que nos lecteurs s'arrachent en ce moment.</p>
+                    <p class="mt-1 text-slate-600 ">Ce que nos lecteurs s'arrachent en ce moment.</p>
                 </div>
                 <a href="{{ route('books.index', ['sort' => 'popular']) }}" class="link shrink-0 text-sm">Tout voir →</a>
             </div>
@@ -109,7 +109,7 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <h2 id="titre-catalogue" class="section-title">Le catalogue</h2>
-                <p class="mt-1 text-slate-600 dark:text-slate-400">Choisissez votre prochaine lecture.</p>
+                <p class="mt-1 text-slate-600 ">Choisissez votre prochaine lecture.</p>
             </div>
             <form action="{{ route('books.index') }}" class="flex w-full gap-2 sm:w-auto">
                 <label for="q-catalogue" class="sr-only">Rechercher</label>
@@ -137,12 +137,12 @@
                 ['Support réactif', 'Une question ? Notre équipe vous répond 6 jours sur 7.', 'M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z'],
             ] as [$title, $text, $icon])
                 <div class="card flex gap-4 p-5" data-reveal>
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-800 dark:bg-brand-900/60 dark:text-brand-200">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-800 ">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/></svg>
                     </span>
                     <div>
-                        <h3 class="font-sans font-semibold text-ink dark:text-white">{{ $title }}</h3>
-                        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $text }}</p>
+                        <h3 class="font-sans font-semibold text-ink ">{{ $title }}</h3>
+                        <p class="mt-1 text-sm text-slate-600 ">{{ $text }}</p>
                     </div>
                 </div>
             @endforeach

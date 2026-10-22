@@ -1,7 +1,7 @@
 @php($editing = $category->exists)
 <x-admin-layout :title="$editing ? 'Modifier une catégorie' : 'Nouvelle catégorie'">
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-ink dark:text-white">{{ $editing ? $category->name : 'Nouvelle catégorie' }}</h1>
+        <h1 class="text-2xl font-bold text-ink ">{{ $editing ? $category->name : 'Nouvelle catégorie' }}</h1>
         <a href="{{ route('admin.categories.index') }}" class="btn-ghost">← Retour</a>
     </x-slot>
 

@@ -11,23 +11,23 @@
     @endif
 
     <x-slot name="header">
-        <nav class="text-sm text-slate-500 dark:text-slate-400" aria-label="Fil d'Ariane">
+        <nav class="text-sm text-slate-500 " aria-label="Fil d'Ariane">
             <a href="{{ route('home') }}" class="hover:text-brand-700">Accueil</a>
             <span aria-hidden="true">/</span>
             <a href="{{ route('books.index') }}" class="hover:text-brand-700">Boutique</a>
             @if ($currentCategory)
-                <span aria-hidden="true">/</span> <span class="text-slate-700 dark:text-slate-200">{{ $currentCategory->name }}</span>
+                <span aria-hidden="true">/</span> <span class="text-slate-700 ">{{ $currentCategory->name }}</span>
             @endif
         </nav>
-        <h1 class="mt-2 text-3xl font-bold text-ink sm:text-4xl dark:text-white">{{ $pageTitle }}</h1>
+        <h1 class="mt-2 text-3xl font-bold text-ink sm:text-4xl ">{{ $pageTitle }}</h1>
         @if ($currentCategory?->description)
-            <p class="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">{{ $currentCategory->description }}</p>
+            <p class="mt-2 max-w-2xl text-slate-600 ">{{ $currentCategory->description }}</p>
         @endif
     </x-slot>
 
     <div class="container-page py-8" x-data="{ filtersOpen: false }">
         <div class="flex items-center justify-between gap-4">
-            <p class="text-sm text-slate-600 dark:text-slate-400">
+            <p class="text-sm text-slate-600 ">
                 {{ $books->total() }} e-book{{ $books->total() > 1 ? 's' : '' }}
             </p>
             <div class="flex items-center gap-2">
@@ -39,7 +39,7 @@
                     @foreach (collect($filters)->except(['sort', 'category']) as $key => $value)
                         <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                     @endforeach
-                    <label for="sort" class="hidden text-sm text-slate-600 sm:block dark:text-slate-400">Trier par</label>
+                    <label for="sort" class="hidden text-sm text-slate-600 sm:block ">Trier par</label>
                     <select id="sort" name="sort" class="input !w-auto rounded-full py-2 text-sm" onchange="this.form.submit()">
                         @foreach ($sorts as $value => $label)
                             <option value="{{ $value }}" @selected(($filters['sort'] ?? 'recent') === $value)>{{ $label }}</option>
@@ -103,7 +103,7 @@
                             @foreach (['' => 'Tous', 'pdf' => 'PDF', 'epub' => 'EPUB'] as $value => $label)
                                 <label class="flex-1">
                                     <input type="radio" name="format" value="{{ $value }}" class="peer sr-only" @checked(($filters['format'] ?? '') === $value)>
-                                    <span class="block cursor-pointer rounded-lg border border-slate-300 py-1.5 text-center text-sm peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:font-semibold peer-checked:text-brand-900 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 dark:border-ink-600 dark:peer-checked:bg-brand-950 dark:peer-checked:text-brand-100">{{ $label }}</span>
+                                    <span class="block cursor-pointer rounded-lg border border-slate-300 py-1.5 text-center text-sm peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:font-semibold peer-checked:text-brand-900 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 ">{{ $label }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -136,8 +136,8 @@
             <div>
                 @if ($books->isEmpty())
                     <div class="card flex flex-col items-center p-12 text-center">
-                        <p class="font-serif text-xl font-bold text-ink dark:text-white">Aucun e-book ne correspond à votre recherche.</p>
-                        <p class="mt-2 text-slate-600 dark:text-slate-400">Essayez d'élargir vos filtres.</p>
+                        <p class="font-serif text-xl font-bold text-ink ">Aucun e-book ne correspond à votre recherche.</p>
+                        <p class="mt-2 text-slate-600 ">Essayez d'élargir vos filtres.</p>
                         <a href="{{ route('books.index') }}" class="btn-primary mt-6">Voir tout le catalogue</a>
                     </div>
                 @else
